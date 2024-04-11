@@ -11,3 +11,5 @@ drf-nested-routers
 psycopg2
 gunicorn
 whitenoise
+firebase_admin
+Pillow
