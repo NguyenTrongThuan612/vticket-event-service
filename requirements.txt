@@ -8,3 +8,6 @@ djangorestframework-simplejwt
 drf-yasg
 django_redis
 drf-nested-routers
+psycopg2
+gunicorn
+whitenoise

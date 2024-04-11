@@ -1,0 +1,1 @@
+from vticket_app.models.event_2_event_topic import Event2EventTopic
