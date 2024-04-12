@@ -28,7 +28,7 @@ class HealthView(ViewSet):
                 "status": redis_connection.ping(),
                 "host": conn_kwagrs['host'],
                 "port": conn_kwagrs['port'],
-                "database": conn_kwagrs['db']
+                "database": conn_kwagrs.get("db", "-")
             }
             return conn_inf
         except Exception as e:
