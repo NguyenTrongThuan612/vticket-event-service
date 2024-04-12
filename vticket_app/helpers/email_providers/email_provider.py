@@ -4,7 +4,6 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 
 class EmailProvider(ABC):
-
     def send_html_template_email(self, to, cc, subject, template_name, context):
         try:
             template = get_template(template_name)

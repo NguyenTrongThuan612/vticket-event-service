@@ -12,7 +12,6 @@ class Event(models.Model):
     start_date = models.DateField(null=False)
     end_date = models.DateField(null=False)
     start_time = models.TimeField(null=False)
-    end_time = models.TimeField(null=False)
     location = models.CharField(max_length=500)
     banner_url = models.URLField(null=True)
     event_topic = models.ManyToManyField(EventTopic, related_name="events", through="vticket_app.Event2EventTopic")
