@@ -42,11 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
-    'vticket_app'
+    'vticket_app',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,12 +84,12 @@ WSGI_APPLICATION = 'vticket.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
-        'NAME': config("MYSQL_DATABASE_DB", default="vticket"),
-        'USER': config("MYSQL_DATABASE_USER", "trongthuan612"),
-        'PASSWORD': config("MYSQL_DATABASE_PASSWORD", "Thuan123"),
-        'HOST': config("MYSQL_DATABASE_HOST", "trongthuan612.mysql.pythonanywhere-services.com"),
-        'PORT': config("MYSQL_DATABASE_PORT", "3306"),
+        'ENGINE': 'django.db.backends.postgresql', 
+        'NAME': config("DATABASE_DB", default="vticket"),
+        'USER': config("DATABASE_USER", "root"),
+        'PASSWORD': config("DATABASE_PASSWORD", "thuan123"),
+        'HOST': config("DATABASE_HOST", "172.17.0.3"),
+        'PORT': config("DATABASE_PORT", "3306"),
     }
 }
 

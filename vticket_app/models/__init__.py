@@ -1,2 +1,1 @@
-from vticket_app.models.user import User
-__all__ = ["User"]
+from vticket_app.models.event_2_event_topic import Event2EventTopic
