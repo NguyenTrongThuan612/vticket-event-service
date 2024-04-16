@@ -15,4 +15,4 @@ class Event(models.Model):
     location = models.CharField(max_length=500)
     banner_url = models.URLField(null=True)
     event_topic = models.ManyToManyField(EventTopic, related_name="events", through="vticket_app.Event2EventTopic")
-    creator_id = models.IntegerField(null=False)
+    owner_id = models.IntegerField(null=False)
