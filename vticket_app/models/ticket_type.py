@@ -11,4 +11,4 @@ class TicketType(models.Model):
     name = models.CharField(max_length=150)
     description = models.CharField(max_length=500)
     price = models.IntegerField(validators=[MinValueValidator(0)])
-    event_id = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
