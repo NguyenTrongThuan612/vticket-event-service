@@ -3,6 +3,7 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from vticket_app.dtos.user_dto import UserDTO
 from vticket_app.helpers.session_provider import SessionProvider
+from vticket_app.utils.response import RestResponse
 
 class CustomJWTAuthentication(BaseAuthentication):
     session_provider = SessionProvider()
