@@ -1,11 +1,17 @@
 import datetime
+import dataclasses
 from vticket_app.models.support_request import SupportRequest
-from vticket_app.serializers.support_request_serializer import SupportRequestSerializer
+from vticket_app.dtos.support_request_dto import SupportRequestDto
 
 class SupportRequestService:
-    serialzier_class = SupportRequestSerializer
 
-    def create_request(self, title: str, content: str) -> bool:
-        new_request = SupportRequest.objects.create(title=title, content=content)
-        return bool(new_request.id)
+    def create_request(self, supportRequest: SupportRequestDto) -> bool:
+        _data = dataclasses.asdict(supportRequest)
+
+        instance = SupportRequest(**_data)
+        instance.save()
+        
+        if instance.id is None:
+            return False
+        return True
     

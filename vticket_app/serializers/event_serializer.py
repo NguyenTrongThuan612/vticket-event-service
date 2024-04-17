@@ -6,7 +6,7 @@ from vticket_app.serializers.ticket_type_serializer import TicketTypeSerializer
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        exclude = ["creator_id"]
+        exclude = ["owner_id"]
 
     ticket_type = TicketTypeSerializer(many=True, allow_empty=False, min_length=1, exclude=["event_id"])
 
