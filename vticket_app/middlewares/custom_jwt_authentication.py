@@ -1,9 +1,8 @@
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
 
 from vticket_app.dtos.user_dto import UserDTO
 from vticket_app.helpers.session_provider import SessionProvider
-from vticket_app.utils.response import RestResponse
 
 class CustomJWTAuthentication(BaseAuthentication):
     session_provider = SessionProvider()
@@ -12,7 +11,7 @@ class CustomJWTAuthentication(BaseAuthentication):
         bearer_token = request.headers.get("Authorization", None)
 
         if bearer_token is None:
-            raise AuthenticationFailed("Missing token!")
+            raise NotAuthenticated("Missing token!")
         
         token = bearer_token.replace("Bearer ", "")
 
@@ -21,5 +20,5 @@ class CustomJWTAuthentication(BaseAuthentication):
         
         session_data = self.session_provider.get_context(token=token)
         user_dto = UserDTO(**session_data)
-        
+
         return (user_dto, None)

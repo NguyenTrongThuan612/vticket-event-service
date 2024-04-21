@@ -16,7 +16,8 @@ class SupportRequestService:
         return True
     
     def get_all_request(self, user_id) -> list:
-        queryset = SupportRequest.objects.filter(owner_id = user_id)
+        queryset = SupportRequest.objects.filter(owner_id=user_id)
+        
         return SupportRequestSerializer(queryset, many=True).data
     
     

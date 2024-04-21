@@ -21,21 +21,12 @@ class SupportResponseView(viewsets.ViewSet):
     def create(self, request: Request, validated_body: dict):
         try:
             dto = CreateSupportResponseDto(**validated_body, owner_id=request.user.id)
-            created = self.support_response_service.create_response(dto)
-            if not created:
-                raise IntegrityError()
-            return RestResponse().success().set_message("Phản hồi hỗ trợ thành công!").response    
-        except IntegrityError:
-            return RestResponse().defined_error().set_message("Xin lỗi, gửi phản hồi hỗ trợ thất bại. Vui lòng xem xét lại dữ liệu đầu vào").response
+            is_created = self.support_response_service.create_response(dto)
+
+            if is_created:
+                return RestResponse().success().set_message("Phản hồi hỗ trợ thành công!").response    
+            else:
+                return RestResponse().defined_error().set_message("Đã xảy ra chút sự cố! Bạn vui lòng chờ đợi trong khi chúng tôi nỗ lực khắc phục vấn đề!").response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
-    
-    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
-    def list(self, request: Request):
-        try:
-            data = self.support_response_service.get_all_response(request.user.id)
-            return RestResponse().success().set_data(data).response
-        except Exception as e:
-            print(e)
-            return RestResponse().internal_server_error().response  

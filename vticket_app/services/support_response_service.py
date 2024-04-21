@@ -6,14 +6,11 @@ class SupportResponseService:
 
     def create_response(self, supportResponse: CreateSupportResponseDto) -> bool:
         _data = dataclasses.asdict(supportResponse)
-
         instance = SupportResponse(**_data)
         instance.save()
         
-        if instance.id is None:
-            return False
-        return True
+        return instance.id is not None
     
     def get_all_response(self, user_id) -> list:
-        queryset = SupportResponse.objects.filter(owner_id = user_id)
+        queryset = SupportResponse.objects.filter(owner_id=user_id)
         return SupportResponseSerializer(queryset, many=True).data
