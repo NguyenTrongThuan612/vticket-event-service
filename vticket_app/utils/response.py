@@ -70,3 +70,8 @@ class RestResponse():
         self.__status = RestResponseStatusEnum.DIRECT.value[0]
         self.__message = RestResponseStatusEnum.DIRECT.value[1]
         return self
+    
+    def invalid_token(self):
+        self.__status = RestResponseStatusEnum.INVALID_TOKEN.value[0]
+        self.__message = RestResponseStatusEnum.INVALID_TOKEN.value[1]
+        return self
