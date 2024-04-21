@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from vticket_app.models.support_request import SupportRequest
-class SupportRequestSerializer(serializers.ModelSerializer):
+from vticket_app.models.support_response import SupportResponse
+class SupportResponseSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SupportRequest
+        model = SupportResponse
         exclude = ["owner_id"]
 
     def __init__(self, *args, **kwargs):
