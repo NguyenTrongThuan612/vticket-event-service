@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 
 from vticket_app.dtos.create_event_dto import CreateEventDto
-from vticket_app.serializers.event_serializer import EventSerializer
+from vticket_app.serializers.create_event_serializer import CreateEventSerializer
 from vticket_app.services.event_service import EventService
 from vticket_app.utils.response import RestResponse
 from vticket_app.decorators.validate_body import validate_body
@@ -18,8 +18,8 @@ class EventView(viewsets.ViewSet):
     permission_classes = (IsBusiness,)
     event_service = EventService()
 
-    @validate_body(EventSerializer)
-    @swagger_auto_schema(request_body=EventSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
+    @validate_body(CreateEventSerializer)
+    @swagger_auto_schema(request_body=CreateEventSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
     def create(self, request: Request, validated_body: dict):
         try:
             dto = CreateEventDto(**validated_body, owner_id=request.user.id)
