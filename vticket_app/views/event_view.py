@@ -1,8 +1,8 @@
-from django.db import transaction, IntegrityError
-
 from rest_framework import viewsets
 from rest_framework.request import Request
+from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
+from django.db import transaction, IntegrityError
 
 
 from vticket_app.dtos.create_event_dto import CreateEventDto
@@ -35,3 +35,14 @@ class EventView(viewsets.ViewSet):
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
+    
+    @action(methods=["GET"], detail=True, url_path="promotion")
+    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
+    def get_promotions(self, request: Request):
+        try:
+            pass
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response
+        
+    
