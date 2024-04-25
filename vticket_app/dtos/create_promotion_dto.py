@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from vticket_app.enums.discount_type_enum import DiscountTypeEnum
-from vticket_app.dtos.promotion_condition_dto import PromotionConditionDto
+from vticket_app.enums.promotion_evaluation_field_enum import PromotionEvaluationFieldEnum
+from vticket_app.enums.promotion_evaluation_condition_enum import PromotionEvaluationConditionEnum
 
 @dataclass
 class CreatePromotionDto():
@@ -15,8 +16,11 @@ class CreatePromotionDto():
     start_date: date = None
     end_date: date = None
     deleted_at: datetime = None
-    promotion_condition: PromotionConditionDto = None
+    evaluation_field: PromotionEvaluationFieldEnum = None
+    condition: PromotionEvaluationConditionEnum = None
+    evaluation_value: int = None
 
     def __post_init__(self):
         self.discount_type = (DiscountTypeEnum)(self.discount_type)
-        self.promotion_condition = PromotionConditionDto(**self.promotion_condition)
+        self.evaluation_field = (PromotionEvaluationFieldEnum)(self.evaluation_field)
+        self.condition = (PromotionEvaluationConditionEnum)(self.condition)
