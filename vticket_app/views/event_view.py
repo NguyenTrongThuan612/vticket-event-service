@@ -38,8 +38,7 @@ class EventView(viewsets.ViewSet):
             print(e)
             return RestResponse().internal_server_error().response
     
-    @action(methods=["GET"], detail=True, url_path="promotion")
-    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
+    @action(methods=["GET"], detail=True, url_path="promotion", authentication_classes=(), permission_classes=())
     def get_promotions(self, request: Request, pk: str):
         try:
             result = self.promotion_service.get_promotions_by_event_id(int(pk))

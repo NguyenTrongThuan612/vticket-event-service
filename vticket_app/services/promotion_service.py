@@ -1,5 +1,8 @@
 from dataclasses import asdict
+from datetime import datetime
+from django.core.exceptions import ObjectDoesNotExist
 
+from vticket_app.enums.instance_error_enum import InstanceErrorEnum
 from vticket_app.models.promotion import Promotion
 from vticket_app.models.promotion_condition import PromotionCondition
 from vticket_app.dtos.create_promotion_dto import CreatePromotionDto
@@ -42,5 +45,22 @@ class PromotionService():
             return False
         
     def get_promotions_by_event_id(self, event_id: int) -> list[dict]:
-        queryset = Promotion.objects.filter(event__id=event_id)
+        queryset = Promotion.objects.filter(event__id=event_id, deleted_at=None)
         return PromotionSerializer(queryset, many=True).data
+    
+    def delete_promotion(self, id: int) -> InstanceErrorEnum:
+        try:
+            instance = Promotion.objects.get(id=id)
+
+            if instance.deleted_at is not None:
+                return InstanceErrorEnum.DELETED
+            
+            instance.deleted_at = datetime.now()
+            instance.save(update_fields=["deleted_at"])
+
+            return InstanceErrorEnum.ALL_OK
+        except ObjectDoesNotExist:
+            return InstanceErrorEnum.NOT_EXISTED
+        except Exception as e:
+            print(e)
+            raise(e)
