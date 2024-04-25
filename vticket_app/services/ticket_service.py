@@ -37,7 +37,6 @@ class TicketService():
         
     def create_ticket_type_details(self, dataset: list[TicketTypeDetailDto], ticket_type: TicketType):
         try:
-            return False
             instances = TicketTypeDetail.objects.bulk_create(
                 [
                     TicketTypeDetail(
@@ -54,15 +53,19 @@ class TicketService():
         
     def config_seats(self, dataset: list[SeatConfigurationDto], ticket_type: TicketType) -> bool:
         try:
-            instances = SeatConfiguration.objects.bulk_create(
-                [
-                    SeatConfiguration(
-                        ticket_type=ticket_type, 
-                        **dataclasses.asdict(data)
-                    ) 
-                    for data in dataset
-                ]
-            )
+            instances = []
+
+            for data in dataset:
+                for seat_number in range(data.start_seat_number, data.end_seat_number):
+                    instances.append(
+                        SeatConfiguration(
+                            ticket_type=ticket_type,
+                            position=data.position,
+                            seat_number=seat_number
+                        )
+                    )
+            SeatConfiguration.objects.bulk_create(instances)
+            
             return all(bool(instance.id) for instance in instances)
         except Exception as e:
             print(e)

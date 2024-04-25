@@ -7,7 +7,7 @@ from vticket_app.utils.response import RestResponse
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
-
+    print(response, exc)
     return {
         401: RestResponse().invalid_token().response,
         403: RestResponse().permission_denied().response
