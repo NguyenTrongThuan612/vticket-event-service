@@ -4,6 +4,7 @@ from vticket_app.models.promotion import Promotion
 from vticket_app.models.promotion_condition import PromotionCondition
 from vticket_app.dtos.create_promotion_dto import CreatePromotionDto
 from vticket_app.dtos.promotion_condition_dto import PromotionConditionDto
+from vticket_app.serializers.promotion_serializer import PromotionSerializer
 
 class PromotionService():
     def create_promotion(self, data: CreatePromotionDto) -> bool:
@@ -39,3 +40,7 @@ class PromotionService():
         except Exception as e:
             print(e)
             return False
+        
+    def get_promotions_by_event_id(self, event_id: int) -> list[dict]:
+        queryset = Promotion.objects.filter(event__id=event_id)
+        return PromotionSerializer(queryset, many=True).data

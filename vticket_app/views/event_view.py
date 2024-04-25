@@ -8,6 +8,7 @@ from django.db import transaction, IntegrityError
 from vticket_app.dtos.create_event_dto import CreateEventDto
 from vticket_app.serializers.create_event_serializer import CreateEventSerializer
 from vticket_app.services.event_service import EventService
+from vticket_app.services.promotion_service import PromotionService
 from vticket_app.utils.response import RestResponse
 from vticket_app.decorators.validate_body import validate_body
 from vticket_app.helpers.swagger_provider import SwaggerProvider
@@ -16,6 +17,7 @@ from vticket_app.middlewares.custom_permissions.is_business import IsBusiness
 class EventView(viewsets.ViewSet):
     permission_classes = (IsBusiness,)
     event_service = EventService()
+    promotion_service = PromotionService()
 
     @validate_body(CreateEventSerializer)
     @swagger_auto_schema(request_body=CreateEventSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
@@ -38,9 +40,10 @@ class EventView(viewsets.ViewSet):
     
     @action(methods=["GET"], detail=True, url_path="promotion")
     @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
-    def get_promotions(self, request: Request):
+    def get_promotions(self, request: Request, pk: str):
         try:
-            pass
+            result = self.promotion_service.get_promotions_by_event_id(int(pk))
+            return RestResponse().success().set_data({"promotions": result}).response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
