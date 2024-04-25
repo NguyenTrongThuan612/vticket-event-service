@@ -1,0 +1,5 @@
+from vticket_app.serializers.ticket_type_serializer import TicketTypeSerializer
+from vticket_app.validations.create_seat_configuration_validator import CreateSeatConfigurationValidator
+
+class CreateTicketTypeSerializer(TicketTypeSerializer):
+    seat_configuration = CreateSeatConfigurationValidator(many=True, allow_empty=False)

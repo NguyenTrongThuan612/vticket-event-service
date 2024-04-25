@@ -10,7 +10,7 @@ class EventSerializer(serializers.ModelSerializer):
         exclude = ["owner_id"]
 
     ticket_types = TicketTypeSerializer(many=True, allow_empty=False, min_length=1, exclude=["event"])
-    event_topics = serializers.PrimaryKeyRelatedField(queryset=EventTopic.objects.all(), many=True)
+    event_topics = serializers.PrimaryKeyRelatedField(required=False, queryset=EventTopic.objects.all(), many=True, allow_null=True)
 
     def validate(self, attrs):
         _validated_data = super().validate(attrs)
