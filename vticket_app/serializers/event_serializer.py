@@ -9,7 +9,17 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         exclude = ["owner_id"]
 
-    ticket_types = TicketTypeSerializer(many=True, allow_empty=False, min_length=1, exclude=["event"])
+    def __init__(self, *args, **kwargs):
+        existing = set(self.fields.keys())
+        fields = kwargs.pop("fields", []) or existing
+        exclude = kwargs.pop("exclude", [])
+        
+        super().__init__(*args, **kwargs)
+        
+        for field in exclude + list(existing - fields):
+            self.fields.pop(field, None)
+
+    ticket_types = TicketTypeSerializer(many=True, allow_empty=False, min_length=1)
     event_topics = serializers.PrimaryKeyRelatedField(required=False, queryset=EventTopic.objects.all(), many=True, allow_null=True)
 
     def validate(self, attrs):
