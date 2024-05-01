@@ -19,5 +19,5 @@ class TicketTypeSerializer(serializers.ModelSerializer):
         for field in exclude + list(existing - fields):
             self.fields.pop(field, None)
 
-    ticket_type_detail = TicketTypeDetailSerializer(many=True, allow_empty=True, exclude=["ticket_type"])
-    seat_configuration = SeatConfigurationSerializer(many=True, allow_empty=False, exclude=["ticket_type"])
+    ticket_type_details = TicketTypeDetailSerializer(many=True, allow_empty=True)
+    seat_configurations = SeatConfigurationSerializer(many=True, allow_empty=False)

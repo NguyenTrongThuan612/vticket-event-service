@@ -5,8 +5,8 @@ from vticket_app.serializers.event_topic_serializer import EventTopicSerializer
 class EventTopicService():
     serializer_class = EventTopicSerializer
 
-    def create_topic(self, name: str, description: str) -> bool:
-        new_topic = EventTopic.objects.create(name=name, description=description)
+    def create_topic(self, name: str, description: str, symbolic_image_url: str = None) -> bool:
+        new_topic = EventTopic.objects.create(name=name, description=description, symbolic_image_url=symbolic_image_url)
         return bool(new_topic.id)
     
     def get_all_topics(self) -> list:
