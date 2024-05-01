@@ -7,4 +7,5 @@ class EventTopic(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=500)
     description = models.TextField()
+    symbolic_image_url = models.URLField(null=True, default=None)
     deleted_at = models.DateTimeField(null=True, default=None)
