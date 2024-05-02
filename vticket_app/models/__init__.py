@@ -1,2 +1,3 @@
 from vticket_app.models.event_2_event_topic import Event2EventTopic
 from vticket_app.models.support_response import SupportResponse
+from vticket_app.models.feedback import Feedback
