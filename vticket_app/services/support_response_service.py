@@ -4,8 +4,8 @@ from vticket_app.dtos.create_support_response_dto import CreateSupportResponseDt
 from vticket_app.serializers.support_response_serializer import SupportResponseSerializer
 class SupportResponseService:
 
-    def create_response(self, supportResponse: CreateSupportResponseDto) -> bool:
-        _data = dataclasses.asdict(supportResponse)
+    def create_response(self, support_response: CreateSupportResponseDto) -> bool:
+        _data = dataclasses.asdict(support_response)
         instance = SupportResponse(**_data)
         instance.save()
         
@@ -14,3 +14,5 @@ class SupportResponseService:
     def get_all_response(self, user_id) -> list:
         queryset = SupportResponse.objects.filter(owner_id=user_id)
         return SupportResponseSerializer(queryset, many=True).data
+    
+    
