@@ -10,7 +10,7 @@ class CreateEventSerializer(EventSerializer):
     
     def validate(self, attrs):
         _validated_data = super().validate(attrs)
-        _seats = list(chain.from_iterable([data["seat_configuration"] for data in _validated_data["ticket_types"]]))
+        _seats = list(chain.from_iterable([data["seat_configurations"] for data in _validated_data["ticket_types"]]))
         _grouped_seats = pd.DataFrame(_seats).groupby("position")
 
         for _, group in _grouped_seats:

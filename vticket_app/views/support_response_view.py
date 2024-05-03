@@ -1,7 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.request import Request
 from drf_yasg.utils import swagger_auto_schema
-from django.db import IntegrityError
 
 from vticket_app.services.support_request_service import SupportRequestService
 from vticket_app.dtos.create_support_response_dto import CreateSupportResponseDto
