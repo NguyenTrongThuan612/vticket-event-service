@@ -11,8 +11,3 @@ class SupportResponseService:
         
         return instance.id is not None
     
-    def get_all_response(self, user_id) -> list:
-        queryset = SupportResponse.objects.filter(owner_id=user_id)
-        return SupportResponseSerializer(queryset, many=True).data
-    
-    
