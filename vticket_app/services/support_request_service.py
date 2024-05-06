@@ -1,12 +1,12 @@
-import datetime
 import dataclasses
 from vticket_app.models.support_request import SupportRequest
 from vticket_app.dtos.create_support_request_dto import CreateSupportRequestDto
 from vticket_app.serializers.support_request_serializer import SupportRequestSerializer
-class SupportRequestService:
+from vticket_app.dtos.user_dto import UserDTO
 
-    def create_request(self, supportRequest: CreateSupportRequestDto) -> bool:
-        _data = dataclasses.asdict(supportRequest)
+class SupportRequestService:
+    def create_request(self, support_request: CreateSupportRequestDto) -> bool:
+        _data = dataclasses.asdict(support_request)
 
         instance = SupportRequest(**_data)
         instance.save()
@@ -20,5 +20,13 @@ class SupportRequestService:
         
         return SupportRequestSerializer(queryset, many=True).data
     
+    def get_request_by_id(self, request_id: int) -> SupportRequest:
+        try:
+            return SupportRequest.objects.get(id=request_id)
+        except:
+            return None
+
+    def can_reply(self, support_request: SupportRequest, user: UserDTO) -> bool:
+        return support_request.event.owner_id == user.id
     
     

@@ -16,3 +16,4 @@ class Event(models.Model):
     banner_url = models.URLField(null=True)
     event_topic = models.ManyToManyField(EventTopic, related_name="events", through="vticket_app.Event2EventTopic")
     owner_id = models.IntegerField(null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
