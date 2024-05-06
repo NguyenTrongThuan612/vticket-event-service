@@ -41,6 +41,6 @@ class EventService():
             )
             
 
-        return EventSerializer(queryset, many=True).data
+        return EventSerializer(queryset.order_by("created_at"), many=True).data
         
         
