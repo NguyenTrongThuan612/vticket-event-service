@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.request import Request
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from django.db import transaction, IntegrityError
 
 
@@ -13,6 +14,7 @@ from vticket_app.utils.response import RestResponse
 from vticket_app.decorators.validate_body import validate_body
 from vticket_app.helpers.swagger_provider import SwaggerProvider
 from vticket_app.middlewares.custom_permissions.is_business import IsBusiness
+from vticket_app.middlewares.custom_permissions.is_customer import IsCustomer
 
 class EventView(viewsets.ViewSet):
     permission_classes = (IsBusiness,)
@@ -47,4 +49,17 @@ class EventView(viewsets.ViewSet):
             print(e)
             return RestResponse().internal_server_error().response
         
-    
+    @action(methods=["GET"], detail=False, url_path="search", permission_classes=(IsCustomer,))
+    @swagger_auto_schema(manual_parameters=[
+        SwaggerProvider.header_authentication(),
+        SwaggerProvider.query_param("kw", openapi.TYPE_STRING)
+        ]
+    )
+    def search(self, request: Request):
+        try:
+            keyword = request.query_params.get("kw", None) 
+            data = self.event_service.search_event(keyword=keyword)
+            return RestResponse().success().set_data(data).response
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response
