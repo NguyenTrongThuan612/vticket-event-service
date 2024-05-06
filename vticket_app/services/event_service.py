@@ -2,8 +2,9 @@ import dataclasses
 
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
+from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.ticket_service import TicketService
-
+from django.db.models import Q
 class EventService():
     ticket_service = TicketService()
 
@@ -26,3 +27,20 @@ class EventService():
         except Exception as e:
             print(e)
             return False
+    
+    def all(self) -> list[Event]:
+        return Event.objects.all()
+    
+    def search_event(self, keyword: str) -> list[Event]:
+        if keyword is None:
+            queryset = self.all()
+        else:
+            queryset = Event.objects.filter(
+                Q(name__icontains=keyword)
+                | Q(description__icontains=keyword)
+            )
+            
+
+        return EventSerializer(queryset, many=True).data
+        
+        
