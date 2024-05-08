@@ -3,6 +3,7 @@ from rest_framework.request import Request
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction, IntegrityError
+from drf_yasg import openapi
 
 from vticket_app.enums.instance_error_enum import InstanceErrorEnum
 from vticket_app.utils.response import RestResponse
@@ -31,5 +32,21 @@ class TicketView(viewsets.ViewSet):
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
+        
+    @action(methods=["GET"], detail=False, url_path="filter", permission_classes=(IsCustomer, ))
+    @swagger_auto_schema(manual_parameters=[
+        SwaggerProvider.header_authentication(),
+        SwaggerProvider.query_param("filter", openapi.TYPE_STRING)
+        ]
+    )
+    def list_tickets(self, request: Request):
+        try:
+            filter = request.query_params.get("filter", None)
+            data = self.ticket_service.list_tickets(request.user.id, filter)
+            return RestResponse().success().set_data(data).response
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response
+
         
     

@@ -1,7 +1,10 @@
 import dataclasses
+import datetime
+from django.utils import timezone
 from uuid import uuid4
-from typing import Tuple, Union
+from typing import Callable, Tuple, Union
 from django.db import transaction
+from django.db.models import Q, Case, When, Value, BooleanField
 from django.core.cache import cache
 
 from vticket_app.models.event import Event
@@ -16,6 +19,7 @@ from vticket_app.dtos.ticket_type_detail_dto import TicketTypeDetailDto
 from vticket_app.dtos.seat_configuration_dto import SeatConfigurationDto
 
 from vticket_app.enums.instance_error_enum import InstanceErrorEnum
+from vticket_app.serializers.user_ticket_serializer import UserTicketSerializer
 
 class TicketService():
     booking_payment_minute = 15
@@ -116,3 +120,28 @@ class TicketService():
                 instance.seats.set(seats)
         except Exception as e:
             print(e)
+
+        
+    def filter_ticket(self, field: str, queryset: list[TicketType]) -> list[TicketType]:
+        if field == 'created_at':
+            queryset = queryset.order_by('seat__ticket_type__event__created_at')
+        elif field == 'event_start_time':
+            current_datetime = timezone.now()
+            current_date = current_datetime.date()
+            current_time = current_datetime.time()
+            queryset = queryset.annotate(
+                has_started=Case(
+                When(Q(seat__ticket_type__event__start_date__gt=current_date) |
+                     (Q(seat__ticket_type__event__start_date=current_date) &
+                      Q(seat__ticket_type__event__start_time__gt=current_time)), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+                )
+            ).order_by("-has_started",'seat__ticket_type__event__start_date', 'seat__ticket_type__event__start_time')
+        return queryset
+        
+    def list_tickets(self, user_id: int, order_by: str) -> list[TicketType]:
+        queryset = UserTicket.objects.filter(user_id=user_id)
+        if order_by is not None:
+            queryset = self.filter_ticket(order_by, queryset)
+        return UserTicketSerializer(queryset, many=True, exclude=["user_id"]).data
