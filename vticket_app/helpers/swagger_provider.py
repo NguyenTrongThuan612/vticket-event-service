@@ -8,3 +8,7 @@ class SwaggerProvider():
     @staticmethod
     def query_param(name: str, type: str = openapi.TYPE_STRING, description: str = ""):
         return openapi.Parameter(name, in_=openapi.IN_QUERY, type=type, description=description)
+    
+    @staticmethod
+    def form_data(name: str, type: str = openapi.TYPE_STRING, description: str = ""):
+        return openapi.Parameter(name, in_=openapi.IN_FORM, type=type, description=description)
