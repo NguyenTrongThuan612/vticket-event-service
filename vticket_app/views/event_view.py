@@ -1,7 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.request import Request
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.db import transaction, IntegrityError
@@ -71,7 +70,7 @@ class EventView(viewsets.ViewSet):
             print(e)
             return RestResponse().internal_server_error().response
         
-    @action(methods=["GET"], detail=False, url_path="value-types",authentication_classes=(), permission_classes=())
+    @action(methods=["GET"], detail=False, url_path="value-types", authentication_classes=(), permission_classes=())
     def get_value_types(self, request: Request):
         try:
             ticket_types = self.event_service.get_value_types_enum()

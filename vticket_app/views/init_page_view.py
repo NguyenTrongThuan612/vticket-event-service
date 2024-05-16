@@ -16,12 +16,13 @@ class InitPageView(viewsets.ViewSet):
         try:
             banners = self.init_page_service.get_banner()
             topic_types = self.init_page_service.get_topic_types()
+            upcomming_events = self.init_page_service.get_upcomming_events()
 
             return RestResponse().success().set_data(
                 {
                     "banners": banners,
-                    "outstanding_events": [],
-                    "upcoming_events": [],
+                    "outstanding_events": upcomming_events,
+                    "upcoming_events": upcomming_events,
                     "topic_types": topic_types
                 }
             ).response
