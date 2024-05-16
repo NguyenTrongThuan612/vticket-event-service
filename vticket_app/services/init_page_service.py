@@ -11,11 +11,22 @@ from vticket_app.serializers.event_topic_serializer import EventTopicSerializer
 class InitPageService():
     banner_length = 5
     topic_type_length = 6
+    upcomming_events_length = 12
 
     def get_banner(self) -> Union[list|None]:
         try:
             _today = datetime.now().date()
-            queryset = Event.objects.filter(start_date__lte=_today, end_date__gte=_today)[:self.banner_length]
+            queryset = Event.objects.filter(start_date__gte=_today).order_by("start_date")[:self.banner_length]
+
+            return EventSerializer(queryset, many=True, exclude=["ticket_types"]).data
+        except Exception as e:
+            print(e)
+            return None
+        
+    def get_upcomming_events(self) -> Union[list|None]:
+        try:
+            _today = datetime.now().date()
+            queryset = Event.objects.filter(start_date__gte=_today).order_by("start_date")[:self.upcomming_events_length]
 
             return EventSerializer(queryset, many=True, exclude=["ticket_types"]).data
         except Exception as e:
