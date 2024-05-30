@@ -57,6 +57,7 @@ class TicketView(viewsets.ViewSet):
         try:
             bill_value = self.ticket_service.calculate_bill(pk)
             pay_url, ok = self.ticket_service.get_pay_url(
+                pk,
                 bill_value,
                 get_client_ip(request),
                 f"Thanh toan don hang {pk}",
