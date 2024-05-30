@@ -150,12 +150,13 @@ class TicketService():
             queryset = self.filter_ticket(order_by, queryset)
         return UserTicketSerializer(queryset, many=True, exclude=["user_id"]).data
     
-    def get_pay_url(self, amount: int, customer_ip: str, order_info: str, expire_date: datetime.datetime) -> Tuple[str, bool]:
+    def get_pay_url(self, order_id: str, amount: int, customer_ip: str, order_info: str, expire_date: datetime.datetime) -> Tuple[str, bool]:
         try:
             resp = requests.post(
                 url=f"{RelatedService.payment}/payment/pay-url",
                 data=json.dumps(
                     {
+                        "order_id": order_id,
                         "amount": amount,
                         "created_date": datetime.datetime.now(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d:%H:%M:%S"),
                         "customer_ip": customer_ip,
