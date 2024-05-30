@@ -211,5 +211,6 @@ class TicketService():
             print(e)
             return False
             
-
+    def verify_booking_id(self, booking_id: str) -> bool:
+        return bool(cache.keys(f"booking:{booking_id}:seat:*"))
 

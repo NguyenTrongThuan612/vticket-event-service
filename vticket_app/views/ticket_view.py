@@ -55,6 +55,9 @@ class TicketView(viewsets.ViewSet):
     @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
     def pay_booking(self, request: Request, pk: str):
         try:
+            if not self.ticket_service.verify_booking_id(pk):
+                return RestResponse().defined_error().response
+
             bill_value = self.ticket_service.calculate_bill(pk)
             pay_url, ok = self.ticket_service.get_pay_url(
                 pk,
@@ -67,7 +70,7 @@ class TicketView(viewsets.ViewSet):
             if ok:
                 return RestResponse().direct(pay_url).response
             else:
-                return RestResponse().internal_server_error().response
+                return RestResponse().defined_error().response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
