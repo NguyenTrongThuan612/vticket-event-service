@@ -1,12 +1,17 @@
-import dataclasses
+import json
+import pytz
+import requests
 import datetime
-from django.utils import timezone
+import dataclasses
 from uuid import uuid4
-from typing import Callable, Tuple, Union
+from typing import Tuple, Union
+
+from django.utils import timezone
 from django.db import transaction
-from django.db.models import Q, Case, When, Value, BooleanField
+from django.db.models import Q, Case, When, Value, BooleanField, Sum
 from django.core.cache import cache
 
+from vticket_app.configs.related_services import RelatedService
 from vticket_app.models.event import Event
 from vticket_app.models.ticket_type import TicketType
 from vticket_app.models.ticket_type_detail import TicketTypeDetail
@@ -87,9 +92,9 @@ class TicketService():
         
     def booking(self, user_id: int, seats: list[SeatConfiguration]) -> Union[InstanceErrorEnum, Tuple[str, None]]:
         try:
-
-            if any(cache.keys(f"booking:*:seat:{seat.id}") for seat in seats):
-                return InstanceErrorEnum.EXISTED, None
+            for seat in seats:
+                if cache.keys(f"booking:*:seat:{seat.id}") or seat.user_tickets.filter(is_refunded=False).exists():
+                    return InstanceErrorEnum.EXISTED, None
             
             _booking_id = uuid4().hex
 
@@ -121,7 +126,6 @@ class TicketService():
         except Exception as e:
             print(e)
 
-        
     def filter_ticket(self, field: str, queryset: list[TicketType]) -> list[TicketType]:
         if field == 'created_at':
             queryset = queryset.order_by('seat__ticket_type__event__created_at')
@@ -145,3 +149,66 @@ class TicketService():
         if order_by is not None:
             queryset = self.filter_ticket(order_by, queryset)
         return UserTicketSerializer(queryset, many=True, exclude=["user_id"]).data
+    
+    def get_pay_url(self, amount: int, customer_ip: str, order_info: str, expire_date: datetime.datetime) -> Tuple[str, bool]:
+        try:
+            resp = requests.post(
+                url=f"{RelatedService.payment}/payment/pay-url",
+                data=json.dumps(
+                    {
+                        "amount": amount,
+                        "created_date": datetime.datetime.now(pytz.timezone("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d:%H:%M:%S"),
+                        "customer_ip": customer_ip,
+                        "locale": "vn",
+                        "order_info": order_info,
+                        "expire_date": expire_date.strftime("%Y-%m-%d:%H:%M:%S")
+                    }
+                ),
+                headers={
+                    "Content-type": "application/json"
+                }
+            )
+
+            resp_data = resp.json()
+
+            if resp_data["status"] == 1:
+                return resp_data["data"]["url"], True
+            
+            print(resp_data)
+            return "", False
+        except Exception as e:
+            print(e)
+            return "", False
+        
+    def calculate_bill(self, booking_id: str) -> int:
+        try:
+            origin = Booking.objects.get(id=booking_id).seats.aggregate(bill_value=Sum("ticket_type__price"))
+            return origin["bill_value"]
+        except Exception as e:
+            print(e)
+            raise e
+        
+    def update_booking(self, payment_id: int, booking_id: str, paid_at: datetime.datetime) -> bool:
+        try:
+            booking = Booking.objects.get(id=booking_id)
+            tickets = []
+
+            for seat in booking.seats.all():
+                tickets.append(
+                    UserTicket(
+                        user_id=booking.user_id,
+                        seat=seat,
+                        is_refunded=False,
+                        payment_id=payment_id,
+                        paid_at=paid_at
+                    )
+                )
+
+            UserTicket.objects.bulk_create(tickets)
+            return True
+        except Exception as e:
+            print(e)
+            return False
+            
+
+
