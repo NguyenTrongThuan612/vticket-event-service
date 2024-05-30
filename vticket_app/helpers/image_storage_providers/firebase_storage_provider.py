@@ -1,7 +1,6 @@
 from uuid import uuid4
-from django.core.files.base import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from firebase_admin import credentials, initialize_app, storage, get_app
+from firebase_admin import storage
 
 from vticket_app.helpers.image_storage_providers.image_storage_provider import ImageStorageProvider
 
