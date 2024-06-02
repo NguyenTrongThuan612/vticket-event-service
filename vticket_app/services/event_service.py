@@ -58,5 +58,12 @@ class EventService():
         except Exception as e:
             print(e)
             return False
+
+
+    def get_event_by_id(self, event_id: int) -> Event | None:
+        try:
+            return Event.objects.get(id=event_id)
+        except Exception as e:
+            return None
         
         
