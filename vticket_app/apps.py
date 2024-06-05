@@ -1,5 +1,9 @@
 from django.apps import AppConfig
+import threading
 
+
+keep_app_alive_thread = threading.Thread()
+keep_app_alive_thread.start()
 
 class VticketAccountServiceConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
