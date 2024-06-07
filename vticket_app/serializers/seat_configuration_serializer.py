@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.cache import cache
 
 from vticket_app.models.seat_configuration import SeatConfiguration
 
@@ -16,3 +17,11 @@ class SeatConfigurationSerializer(serializers.ModelSerializer):
         
         for field in exclude + list(existing - fields):
             self.fields.pop(field, None)
+
+    def to_representation(self, instance: SeatConfiguration):
+        re = super().to_representation(instance)
+        is_not_available = (
+            instance.user_tickets.filter(is_refunded=False).exists()
+            or bool(cache.keys(f"booking:*:seat:{instance.id}"))
+        )
+        return {**re, "is_not_available": is_not_available}
