@@ -1,15 +1,17 @@
 import dataclasses
+from django.db.models import Q
 
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.ticket_service import TicketService
 from vticket_app.enums.fee_type_enum import FeeTypeEnum
-from django.db.models import Q
+from vticket_app.tasks.queue_tasks import async_send_email
+
 class EventService():
     ticket_service = TicketService()
 
-    def create_event(self, event: CreateEventDto) -> bool:
+    def create_event(self, event: CreateEventDto) -> Event:
         try:
             _data = dataclasses.asdict(event)
             _ticket_types = event.ticket_types
@@ -22,12 +24,15 @@ class EventService():
             instance.save()
 
             if instance.id is None:
-                return False
+                return None
             
-            return self.ticket_service.create_ticket_types(_ticket_types, instance)
+            if not self.ticket_service.create_ticket_types(_ticket_types, instance):
+                return None
+            
+            return instance
         except Exception as e:
             print(e)
-            return False
+            return None
     
     def all(self) -> list[Event]:
         return Event.objects.all()
@@ -59,11 +64,29 @@ class EventService():
             print(e)
             return False
 
-
     def get_event_by_id(self, event_id: int) -> Event | None:
         try:
             return Event.objects.get(id=event_id)
         except Exception as e:
             return None
+        
+    def send_new_event_email(self, event: Event):
+        try:
+            async_send_email.apply_async(kwargs={
+                    "to": ["ntt06012k2@gmail.com"],
+                    "cc": [],
+                    "subject": f"[Vticket] Chào đón sự kiện mới: {event.name}",
+                    "template_name": "new_event.html",
+                    "context": {
+                        "name": event.name,
+                        "start_date": event.start_date.strftime("%d-%m-%Y"),
+                        "start_time": event.start_time.strftime("%H:%M"),
+                        "event_url": f"https://vticket.netlify.app/event/{event.id}",
+                        "event_banner_url": event.banner_url
+                    }
+                }
+            )
+        except Exception as e:
+            print(e)
         
         

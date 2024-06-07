@@ -167,3 +167,17 @@ CACHES = {
 
 # Firebase
 FIREBASE_ACCOUNT_CERTIFICATE = config("FIREBASE_ACCOUNT_CERTIFICATE", None)
+
+# Celery: Taks queue
+CELERY_BROKER_URL = config("CACHE_URL", None)
+CELERY_RESULT_BACKEND = config("CACHE_URL", None)
+CELERY_CACHE_BACKEND = "default"
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_EXPIRES = 10
+CELERY_TIMEZONE = "Asia/Ho_Chi_Minh"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_IMPORTS = ["vticket_app.tasks.queue_tasks"]
