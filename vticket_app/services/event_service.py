@@ -3,10 +3,11 @@ from django.db.models import Q
 
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
+from vticket_app.models.event_2_event_topic import Event2EventTopic
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.ticket_service import TicketService
 from vticket_app.enums.fee_type_enum import FeeTypeEnum
-from vticket_app.tasks.queue_tasks import async_send_email
+from vticket_app.tasks.queue_tasks import async_send_email_to_all_users
 
 class EventService():
     ticket_service = TicketService()
@@ -29,10 +30,33 @@ class EventService():
             if not self.ticket_service.create_ticket_types(_ticket_types, instance):
                 return None
             
+            if not self.create_event_topics(_event_topics, instance):
+                return None
+            
             return instance
         except Exception as e:
             print(e)
             return None
+        
+    def create_event_topics(self, topics: list, event: Event) -> bool:
+        try:
+            e2et = []
+
+            for topic in topics:
+                e2et.append(
+                    Event2EventTopic(
+                        event=event,
+                        event_topic=topic,
+                        deleted_at=None
+                    )
+                )
+
+            Event2EventTopic.objects.bulk_create(e2et)
+            
+            return True
+        except Exception as e:
+            print(e)
+            return False
     
     def all(self) -> list[Event]:
         return Event.objects.all()
@@ -72,8 +96,8 @@ class EventService():
         
     def send_new_event_email(self, event: Event):
         try:
-            async_send_email.apply_async(kwargs={
-                    "to": ["ntt06012k2@gmail.com"],
+            async_send_email_to_all_users.apply_async(kwargs={
+                    "emails": ["ntt06012k2@gmail.com"],
                     "cc": [],
                     "subject": f"[Vticket] Chào đón sự kiện mới: {event.name}",
                     "template_name": "new_event.html",
