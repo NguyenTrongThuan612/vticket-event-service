@@ -4,6 +4,7 @@ from django.db.models import Q
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
 from vticket_app.models.event_2_event_topic import Event2EventTopic
+from vticket_app.models.notification_subscription import NotificationSubscription
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.ticket_service import TicketService
 from vticket_app.enums.fee_type_enum import FeeTypeEnum
@@ -96,8 +97,9 @@ class EventService():
         
     def send_new_event_email(self, event: Event):
         try:
+            emails = NotificationSubscription.objects.filter(deleted_at=None).values_list("email", flat=True)
             async_send_email_to_all_users.apply_async(kwargs={
-                    "emails": ["ntt06012k2@gmail.com"],
+                    "emails": list(emails),
                     "cc": [],
                     "subject": f"[Vticket] Chào đón sự kiện mới: {event.name}",
                     "template_name": "new_event.html",
