@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 
 class NotificationSubscription(models.Model):
@@ -11,3 +12,13 @@ class NotificationSubscription(models.Model):
     def unsubscript(self):
         self.deleted_at = None
         self.save()
+
+    def subscript(self):
+        self.deleted_at = datetime.datetime.now()
+        self.save()
+
+    def change_status(self):
+        if self.deleted_at is None:
+            self.subscript()
+        else:
+            self.unsubscript()
