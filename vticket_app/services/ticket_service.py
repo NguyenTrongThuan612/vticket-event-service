@@ -148,7 +148,14 @@ class TicketService():
         queryset = UserTicket.objects.filter(user_id=user_id)
         if order_by is not None:
             queryset = self.filter_ticket(order_by, queryset)
-        return UserTicketSerializer(queryset, many=True, exclude=["user_id"]).data
+        return UserTicketSerializer(
+            queryset, 
+            many=True, 
+            exclude=["user_id"], 
+            context={
+                "user_id": user_id
+            }
+        ).data
     
     def get_pay_url(self, order_id: str, amount: int, customer_ip: str, order_info: str, expire_date: datetime.datetime) -> Tuple[str, bool]:
         try:
