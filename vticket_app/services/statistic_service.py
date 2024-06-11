@@ -41,18 +41,19 @@ class StatisticService:
         event_name = event.name
 
         statistic_data = []
-
+        total_ticket_sold = 0
+        total_revenue = 0
         for single_date in date_range:
                 
-            tickets_sold = UserTicket.objects.filter(
+            ticket_sold = UserTicket.objects.filter(
                     seat__ticket_type__event_id=event_id,
                     paid_at__date=single_date,
                     is_refunded=False
                 ).count()
-            
-            total_revenue = 0
+            total_ticket_sold += ticket_sold
+            revenue = 0
 
-            if tickets_sold != 0:
+            if ticket_sold != 0:
                 user_tickets = UserTicket.objects.filter(
                     seat__ticket_type__event_id=event_id,
                     paid_at__date=single_date,
@@ -75,19 +76,22 @@ class StatisticService:
                         if payment_data['status'] == 1 and payment_data['data'] is not None:
                             amount = payment_data['data'].get('amount')
                             if amount is not None:
-                                total_revenue += amount    
+                                revenue += amount
+                                total_revenue += amount
                                 
                 
             statistic_data.append({
                 'date': single_date,
-                'ticket_sold': tickets_sold,
-                'revenue': total_revenue
+                'ticket_sold': ticket_sold,
+                'revenue': revenue
             })
             
         result = {
             'id': event_id,
             'name': event_name,
-            'statistic': statistic_data
+            'statistic': statistic_data,
+            'total_ticket_sold': total_ticket_sold,
+            'total_revenue': total_revenue
         }
         return result  
     
