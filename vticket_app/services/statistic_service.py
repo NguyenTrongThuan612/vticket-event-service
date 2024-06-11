@@ -95,7 +95,7 @@ class StatisticService:
         }
         return result  
     
-    def total_ticket_sold_and_revenue(self, start_date: str, end_date: str) -> list:
+    def total_ticket_sold_and_revenue(self, start_date: str, end_date: str) -> dict:
         if start_date is not None:
             try:
                 start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -121,18 +121,20 @@ class StatisticService:
             
         date_range = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
 
-        statistic_data = []
-
+        statistic_by_day = []
+        total_ticket_sold = 0
+        total_revenue = 0
         for single_date in date_range:
                 
-            tickets_sold = UserTicket.objects.filter(
+            ticket_sold = UserTicket.objects.filter(
                     paid_at__date=single_date,
                     is_refunded=False
                 ).count()
             
-            total_revenue = 0
+            total_ticket_sold += ticket_sold
+            revenue = 0
 
-            if tickets_sold != 0:
+            if ticket_sold != 0:
                 user_tickets = UserTicket.objects.filter(
                     paid_at__date=single_date,
                     is_refunded=False,
@@ -154,13 +156,20 @@ class StatisticService:
                         if payment_data['status'] == 1 and payment_data['data'] is not None:
                             amount = payment_data['data'].get('amount')
                             if amount is not None:
+                                revenue += amount
                                 total_revenue += amount    
                                 
                 
-            statistic_data.append({
+            statistic_by_day.append({
                 'date': single_date,
-                'ticket_sold': tickets_sold,
-                'revenue': total_revenue
+                'ticket_sold': ticket_sold,
+                'revenue': revenue
             })
 
-        return statistic_data  
+        result = {
+            'statistic_by_day': statistic_by_day,
+            'total_ticket_sold': total_ticket_sold,
+            'total_revenue': total_revenue
+        }
+        return result 
+

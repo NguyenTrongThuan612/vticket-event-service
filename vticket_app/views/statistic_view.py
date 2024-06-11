@@ -52,7 +52,7 @@ class StatisticView(viewsets.ViewSet):
             end_date = request.query_params.get("end_date", None)
             data = self.statistic_service.total_ticket_sold_and_revenue(start_date=start_date, end_date=end_date)
             
-            return RestResponse().success().set_data(StatisticSerializer(data, many=True).data).response
+            return RestResponse().success().set_data(StatisticSerializer(data).data).response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response  
