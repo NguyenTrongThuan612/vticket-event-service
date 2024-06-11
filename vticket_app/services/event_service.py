@@ -1,6 +1,7 @@
 import dataclasses
 from django.db.models import Q
 
+from vticket_app.dtos.user_dto import UserDTO
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
 from vticket_app.models.event_2_event_topic import Event2EventTopic
@@ -94,7 +95,13 @@ class EventService():
             return Event.objects.get(id=event_id)
         except Exception as e:
             return None
-        
+    
+    def get_all_event(self, user_id: int) -> list[Event]:
+        return Event.objects.filter(owner_id=user_id)
+    
+    def can_view_statistic(self, event: Event, user: UserDTO) -> bool:
+        return event.owner_id == user.id
+      
     def send_new_event_email(self, event: Event):
         try:
             emails = NotificationSubscription.objects.filter(deleted_at=None).values_list("email", flat=True)
