@@ -26,7 +26,16 @@ class EventView(viewsets.ViewSet):
 
             if event is None:
                 return RestResponse().defined_error().set_message("Sự kiện không tồn tại!").response
-            return RestResponse().success().set_data({"event": EventSerializer(event).data}).response
+            
+            related_events = self.event_service.get_related_events(event)
+
+            return RestResponse().success().set_data(
+                {
+                    "event": EventSerializer(event).data,
+                    "related_evetns": EventSerializer(related_events, many=True, exclude=["ticket_types"]).data,
+                    "org_info": self.event_service.get_owner_info(event)
+                }
+            ).response
         except Exception as e:
             print(e) 
             return RestResponse().internal_server_error().response

@@ -1,6 +1,8 @@
 import dataclasses
 from django.db.models import Q
+import requests
 
+from vticket_app.configs.related_services import RelatedService
 from vticket_app.dtos.user_dto import UserDTO
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
@@ -94,6 +96,24 @@ class EventService():
         try:
             return Event.objects.get(id=event_id)
         except Exception as e:
+            return None
+        
+    def get_related_events(self, event: Event):
+        events = Event.objects.filter(event_topic__in=event.event_topic.all())[:8]
+        return events
+    
+    def get_owner_info(self, event: Event):
+        try:
+            response = requests.get(
+                url=f'{RelatedService.account}/user/{event.owner_id}/internal',
+                headers={
+                    "Content-type": "application/json"
+                }
+            )
+
+            return response.json()["data"]
+        except Exception as e:
+            print(e, response.text)
             return None
     
     def get_all_event(self, user_id: int) -> list[Event]:
