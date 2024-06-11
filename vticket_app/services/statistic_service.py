@@ -28,6 +28,12 @@ class StatisticService:
         today = date.today()
         if end_date > today:
             end_date = today
+        
+        if end_date > event.start_date:
+            end_date = event.start_date - timedelta(days=1)
+        
+        if end_date - start_date > timedelta(days=10):
+            start_date = end_date - timedelta(days=10)
 
         date_range = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
 
@@ -104,6 +110,11 @@ class StatisticService:
         if end_date > today:
             end_date = today
 
+
+        if end_date - start_date > timedelta(days=10):
+            start_date = end_date - timedelta(days=10)
+
+            
         date_range = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
 
         statistic_data = []
