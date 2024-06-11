@@ -31,10 +31,12 @@ class EventManagementView(viewsets.ViewSet):
             dto = CreateEventDto(**validated_body, owner_id=request.user.id)
             
             with transaction.atomic():
-                is_success = self.event_service.create_event(dto)
+                instance = self.event_service.create_event(dto)
 
-                if not is_success:
+                if instance is None:
                     raise IntegrityError()
+
+            self.event_service.send_new_event_email(instance)
             
             return RestResponse().success().response
         except IntegrityError:
@@ -43,6 +45,7 @@ class EventManagementView(viewsets.ViewSet):
             print(e)
             return RestResponse().internal_server_error().response
         
+
     @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
     def list(self, request: Request):
         try:

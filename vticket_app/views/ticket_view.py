@@ -68,7 +68,7 @@ class TicketView(viewsets.ViewSet):
             )
 
             if ok:
-                return RestResponse().direct(pay_url).response
+                return RestResponse().success().set_data({"url": pay_url}).response
             else:
                 return RestResponse().defined_error().response
         except Exception as e:

@@ -1,16 +1,20 @@
 import dataclasses
+from django.db.models import Q
 
 from vticket_app.dtos.user_dto import UserDTO
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
+from vticket_app.models.event_2_event_topic import Event2EventTopic
+from vticket_app.models.notification_subscription import NotificationSubscription
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.ticket_service import TicketService
 from vticket_app.enums.fee_type_enum import FeeTypeEnum
-from django.db.models import Q
+from vticket_app.tasks.queue_tasks import async_send_email_to_all_users
+
 class EventService():
     ticket_service = TicketService()
 
-    def create_event(self, event: CreateEventDto) -> bool:
+    def create_event(self, event: CreateEventDto) -> Event:
         try:
             _data = dataclasses.asdict(event)
             _ticket_types = event.ticket_types
@@ -23,9 +27,35 @@ class EventService():
             instance.save()
 
             if instance.id is None:
-                return False
+                return None
             
-            return self.ticket_service.create_ticket_types(_ticket_types, instance)
+            if not self.ticket_service.create_ticket_types(_ticket_types, instance):
+                return None
+            
+            if not self.create_event_topics(_event_topics, instance):
+                return None
+            
+            return instance
+        except Exception as e:
+            print(e)
+            return None
+        
+    def create_event_topics(self, topics: list, event: Event) -> bool:
+        try:
+            e2et = []
+
+            for topic in topics:
+                e2et.append(
+                    Event2EventTopic(
+                        event=event,
+                        event_topic=topic,
+                        deleted_at=None
+                    )
+                )
+
+            Event2EventTopic.objects.bulk_create(e2et)
+            
+            return True
         except Exception as e:
             print(e)
             return False
@@ -60,7 +90,6 @@ class EventService():
             print(e)
             return False
 
-
     def get_event_by_id(self, event_id: int) -> Event | None:
         try:
             return Event.objects.get(id=event_id)
@@ -72,4 +101,25 @@ class EventService():
     
     def can_view_statistic(self, event: Event, user: UserDTO) -> bool:
         return event.owner_id == user.id
+      
+    def send_new_event_email(self, event: Event):
+        try:
+            emails = NotificationSubscription.objects.filter(deleted_at=None).values_list("email", flat=True)
+            async_send_email_to_all_users.apply_async(kwargs={
+                    "emails": list(emails),
+                    "cc": [],
+                    "subject": f"[Vticket] Chào đón sự kiện mới: {event.name}",
+                    "template_name": "new_event.html",
+                    "context": {
+                        "name": event.name,
+                        "start_date": event.start_date.strftime("%d-%m-%Y"),
+                        "start_time": event.start_time.strftime("%H:%M"),
+                        "event_url": f"https://vticket.netlify.app/event/{event.id}",
+                        "event_banner_url": event.banner_url
+                    }
+                }
+            )
+        except Exception as e:
+            print(e)
+        
         

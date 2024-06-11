@@ -17,5 +17,5 @@ class EmailProvider(ABC):
                 html_message=content
             )
         except Exception as e:
-            print(e)
+            print("send_html_template_email: ", e)
             return -1
