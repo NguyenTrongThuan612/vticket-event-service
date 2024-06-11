@@ -16,3 +16,4 @@ firebase_admin
 Pillow
 django-cors-headers
 celery
+django_celery_beat
