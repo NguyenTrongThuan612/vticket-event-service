@@ -7,6 +7,7 @@ from vticket_app.dtos.user_dto import UserDTO
 from vticket_app.models.event import Event
 from vticket_app.dtos.create_event_dto import CreateEventDto
 from vticket_app.models.event_2_event_topic import Event2EventTopic
+from vticket_app.models.event_topic import EventTopic
 from vticket_app.models.notification_subscription import NotificationSubscription
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.ticket_service import TicketService
@@ -62,6 +63,9 @@ class EventService():
             print(e)
             return False
     
+    def get_events_by_topic(self, topic: EventTopic) -> list[Event]:
+        return Event.objects.filter(event_topic=topic)
+
     def all(self) -> list[Event]:
         return Event.objects.all()
     

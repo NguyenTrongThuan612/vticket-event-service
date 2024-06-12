@@ -6,17 +6,36 @@ from drf_yasg.utils import swagger_auto_schema
 
 from vticket_app.helpers.swagger_provider import SwaggerProvider
 from vticket_app.middlewares.custom_permissions.is_admin import IsAdmin
+from vticket_app.serializers.event_serializer import EventSerializer
+from vticket_app.services.event_service import EventService
 from vticket_app.utils.response import RestResponse
 from vticket_app.decorators.validate_body import validate_body
 from vticket_app.services.event_topic_service import EventTopicService
 from vticket_app.serializers.event_topic_serializer import EventTopicSerializer
+from vticket_app.validations.event_topic_validator import EventTopicValidator
 
 class EventTopicView(viewsets.ViewSet):
     event_topic_service = EventTopicService()
     permission_classes = [IsAdmin]
+    event_service = EventService()
 
     def get_permissions(self):
         return [] if self.action in ["list"] else super().get_permissions()
+    
+    @action(methods=["GET"], detail=True, url_path="events", permission_classes=(), authentication_classes=())
+    def get_events_by_topic(self, request: Request, pk: int):
+        try:
+            validate = EventTopicValidator(data={"event_topic": pk})
+
+            if not validate.is_valid():
+                return RestResponse().validation_failed().set_data(validate.errors).response
+            
+            events = self.event_service.get_events_by_topic(validate.validated_data["event_topic"])
+            
+            return RestResponse().success().set_data(EventSerializer(events, many=True, exclude=["ticket_types"]).data).response
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response
 
     @validate_body(EventTopicSerializer)
     @swagger_auto_schema(request_body=EventTopicSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
