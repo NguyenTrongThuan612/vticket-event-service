@@ -13,6 +13,8 @@ class UserTicketSerializer(serializers.ModelSerializer):
     seat_number = serializers.SerializerMethodField()
     event_name = serializers.SerializerMethodField()
     event_start_date = serializers.SerializerMethodField()
+    event_id = serializers.SerializerMethodField()
+    ticket_status = serializers.SerializerMethodField()
     
     def __init__(self, *args, **kwargs):
         existing = set(self.fields.keys())
@@ -39,3 +41,14 @@ class UserTicketSerializer(serializers.ModelSerializer):
     
     def get_event_start_date(self, obj):
         return obj.seat.ticket_type.event.start_date.strftime("%d-%m-%Y")
+    
+    def get_event_id(self, obj):
+        return obj.seat.ticket_type.event.id
+    
+    def get_ticket_status(self, obj):
+        if obj.payment_id:
+            return "paid"
+        if obj.payment_id is None:
+            return "wait_to_pay"
+        if obj.is_refunded:
+            return "refund"

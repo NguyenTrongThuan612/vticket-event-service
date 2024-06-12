@@ -146,8 +146,10 @@ class TicketService():
         
     def list_tickets(self, user_id: int, order_by: str) -> list[TicketType]:
         queryset = UserTicket.objects.filter(user_id=user_id)
+
         if order_by is not None:
             queryset = self.filter_ticket(order_by, queryset)
+            
         return UserTicketSerializer(
             queryset, 
             many=True, 
