@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'vticket_app.middlewares.request_log_layer.RequestLogLayer'
 ]
 
 ROOT_URLCONF = 'vticket.urls'
@@ -182,3 +183,6 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_IMPORTS = ["vticket_app.tasks.queue_tasks", "vticket.core.tasks.keep_alive"]
+
+# AMQP
+AMQP_URL = config("AMQP_URL", None)
