@@ -10,6 +10,9 @@ class UserTicketSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     feedbackable = serializers.SerializerMethodField()
+    seat_number = serializers.SerializerMethodField()
+    event_name = serializers.SerializerMethodField()
+    event_start_date = serializers.SerializerMethodField()
     
     def __init__(self, *args, **kwargs):
         existing = set(self.fields.keys())
@@ -27,3 +30,12 @@ class UserTicketSerializer(serializers.ModelSerializer):
             and obj.seat.ticket_type.event.start_date <= datetime.datetime.now().date()
             and not Feedback.objects.filter(event=obj.seat.ticket_type.event, owner_id=self.context["user_id"]).exists()
         )
+    
+    def get_seat_number(self, obj):
+        return f"{obj.seat.position}{obj.seat.seat_number}"
+    
+    def get_event_name(self, obj):
+        return obj.seat.ticket_type.event.name
+    
+    def get_event_start_date(self, obj):
+        return obj.seat.ticket_type.event.start_date.strftime("%d-%m-%Y")
