@@ -32,7 +32,7 @@ class EventView(viewsets.ViewSet):
             return RestResponse().success().set_data(
                 {
                     "event": EventSerializer(event).data,
-                    "related_evetns": EventSerializer(related_events, many=True, exclude=["ticket_types"]).data,
+                    "related_events": EventSerializer(related_events, many=True, exclude=["ticket_types"]).data,
                     "org_info": self.event_service.get_owner_info(event)
                 }
             ).response
