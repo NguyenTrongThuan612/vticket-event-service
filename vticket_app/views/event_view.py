@@ -5,6 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from vticket_app.serializers.event_serializer import EventSerializer
+from vticket_app.services.feedback_service import FeedbackService
 from vticket_app.utils.response import RestResponse
 
 from vticket_app.services.event_service import EventService
@@ -18,6 +19,7 @@ class EventView(viewsets.ViewSet):
     image_storage_provider: ImageStorageProvider = FirebaseStorageProvider()
     event_service = EventService()
     promotion_service = PromotionService()
+    feedback_service = FeedbackService()
     authentication_classes = ()
 
     def retrieve(self, request: Request, pk: int):
@@ -65,6 +67,16 @@ class EventView(viewsets.ViewSet):
         try:
             ticket_types = self.event_service.get_value_types_enum()
             return RestResponse().success().set_data({"ticket_types": ticket_types}).response
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response
+        
+
+    @action(methods=["GET"], detail=True, url_path="feedback")
+    def get_feedbacks(self, request: Request, pk: str):
+        try:
+            result = self.feedback_service.get_feedbacks_by_event_id(int(pk))
+            return RestResponse().success().set_data({"feedbacks": result}).response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response

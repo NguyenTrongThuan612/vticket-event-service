@@ -3,7 +3,7 @@ from vticket_app.models.feedback import Feedback
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        exclude = ["owner_id"]
+        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         existing = set(self.fields.keys())

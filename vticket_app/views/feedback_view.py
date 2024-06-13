@@ -4,6 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from vticket_app.services.feedback_service import FeedbackService
 from vticket_app.serializers.feedback_serializer import FeedbackSerializer
+from vticket_app.serializers.create_feedback_serializer import CreateFeedbackSerializer
 from vticket_app.dtos.create_feedback_dto import CreateFeedbackDto
 from vticket_app.middlewares.custom_permissions.is_customer import IsCustomer
 from vticket_app.utils.response import RestResponse
@@ -14,8 +15,8 @@ class FeedbackView(viewsets.ViewSet):
     feedback_service = FeedbackService()
     permission_classes = (IsCustomer, )
     
-    @validate_body(FeedbackSerializer)
-    @swagger_auto_schema(request_body=FeedbackSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
+    @validate_body(CreateFeedbackSerializer)
+    @swagger_auto_schema(request_body=CreateFeedbackSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
     def create(self, request: Request, validated_body: dict):
         try:
             dto = CreateFeedbackDto(**validated_body, owner_id=request.user.id)
@@ -28,13 +29,3 @@ class FeedbackView(viewsets.ViewSet):
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
-        
-    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
-    def list(self, request: Request):
-        try:
-            data = self.feedback_service.get_all_feedback(request.user.id)
-
-            return RestResponse().success().set_data(data).response
-        except Exception as e:
-            print(e)
-            return RestResponse().internal_server_error().response  
