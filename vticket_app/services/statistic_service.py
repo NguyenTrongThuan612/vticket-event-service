@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+import json
 from django.forms import ValidationError
 import requests
 import time
@@ -60,25 +61,26 @@ class StatisticService:
                     is_refunded=False,
                     payment_id__isnull=False
                 )
-
+  
                 payment_ids = user_tickets.values_list('payment_id', flat=True)
                     
-                for payment_id in payment_ids:
-                    response = requests.get(
-                        url=f'{RelatedService.payment}/payment/{payment_id}',
-                        headers={
-                            "Content-type": "application/json"
+                response = requests.post(
+                    url=f'{RelatedService.payment}/payment/list',
+                    headers={
+                        "Content-type": "application/json"
+                    },
+                    data=json.dumps(
+                        {
+                            "payment_ids": list(payment_ids)
                         }
                     )
-                        
-                    if response.status_code == 200:
-                        payment_data = response.json()
-                        if payment_data['status'] == 1 and payment_data['data'] is not None:
-                            amount = payment_data['data'].get('amount')
-                            if amount is not None:
-                                revenue += amount
-                                total_revenue += amount
-                                
+                )
+
+                resp_data = response.json()
+                total_amount = resp_data['data'].get('total_amount')
+                if total_amount is not None:
+                    revenue += total_amount
+                    total_revenue += total_amount  
                 
             statistic_data.append({
                 'date': single_date,
@@ -143,23 +145,24 @@ class StatisticService:
 
                 payment_ids = user_tickets.values_list('payment_id', flat=True)
                     
-                for payment_id in payment_ids:
-                    response = requests.get(
-                        url=f'{RelatedService.payment}/payment/{payment_id}',
-                        headers={
-                            "Content-type": "application/json"
+                response = requests.post(
+                    url=f'{RelatedService.payment}/payment/list',
+                    headers={
+                        "Content-type": "application/json"
+                    },
+                    data=json.dumps(
+                        {
+                            "payment_ids": list(payment_ids)
                         }
                     )
-                        
-                    if response.status_code == 200:
-                        payment_data = response.json()
-                        if payment_data['status'] == 1 and payment_data['data'] is not None:
-                            amount = payment_data['data'].get('amount')
-                            if amount is not None:
-                                revenue += amount
-                                total_revenue += amount    
-                                
-                
+                )
+
+                resp_data = response.json()
+                total_amount = resp_data['data'].get('total_amount')
+                if total_amount is not None:
+                    revenue += total_amount
+                    total_revenue += total_amount  
+
             statistic_by_day.append({
                 'date': single_date,
                 'ticket_sold': ticket_sold,
