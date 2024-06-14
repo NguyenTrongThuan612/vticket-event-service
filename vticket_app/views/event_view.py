@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from vticket_app.helpers.page_pagination import PagePagination
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.feedback_service import FeedbackService
 from vticket_app.utils.response import RestResponse
@@ -15,7 +16,7 @@ from vticket_app.helpers.swagger_provider import SwaggerProvider
 from vticket_app.helpers.image_storage_providers.image_storage_provider import ImageStorageProvider
 from vticket_app.helpers.image_storage_providers.firebase_storage_provider import FirebaseStorageProvider
 
-class EventView(viewsets.ViewSet):
+class EventView(viewsets.GenericViewSet):
     image_storage_provider: ImageStorageProvider = FirebaseStorageProvider()
     event_service = EventService()
     promotion_service = PromotionService()
@@ -51,13 +52,16 @@ class EventView(viewsets.ViewSet):
             print(e)
             return RestResponse().internal_server_error().response
         
-    @action(methods=["GET"], detail=False, url_path="search")
+    @action(methods=["GET"], detail=False, url_path="search", pagination_class=PagePagination)
     @swagger_auto_schema(manual_parameters=[SwaggerProvider.query_param("kw", openapi.TYPE_STRING)])
     def search(self, request: Request):
         try:
             keyword = request.query_params.get("kw", None) 
-            data = self.event_service.search_event(keyword=keyword)
-            return RestResponse().success().set_data(data).response
+            events = self.event_service.search_event(keyword=keyword)
+            pevents = self.paginate_queryset(events)
+            data = EventSerializer(pevents, many=True, exclude=["ticket_types"]).data
+            pdata = self.get_paginated_response(data)
+            return RestResponse().success().set_data(pdata).response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response

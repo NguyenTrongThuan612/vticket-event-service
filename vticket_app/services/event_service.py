@@ -79,7 +79,7 @@ class EventService():
             )
             
 
-        return EventSerializer(queryset.order_by("created_at"), many=True).data
+        return queryset.order_by("-start_date")
     
     def get_value_types_enum(self) -> list:
         values = [choice.value for choice in FeeTypeEnum]
