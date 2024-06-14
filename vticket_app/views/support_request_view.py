@@ -6,13 +6,17 @@ from vticket_app.services.support_request_service import SupportRequestService
 from vticket_app.serializers.support_request_serializer import SupportRequestSerializer
 from vticket_app.dtos.create_support_request_dto import CreateSupportRequestDto
 from vticket_app.middlewares.custom_permissions.is_customer import IsCustomer
+from vticket_app.middlewares.custom_permissions.is_business import IsBusiness
 from vticket_app.utils.response import RestResponse
 from vticket_app.decorators.validate_body import validate_body
 from vticket_app.helpers.swagger_provider import SwaggerProvider
 
 class SupportRequestView(viewsets.ViewSet):
     support_request_service = SupportRequestService()
-    permission_classes = (IsCustomer, )
+    permission_classes = (IsCustomer,)
+
+    def get_permissions(self):
+        return [IsBusiness()] if self.action in ["list"] else super().get_permissions()
     
     @validate_body(SupportRequestSerializer)
     @swagger_auto_schema(request_body=SupportRequestSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
