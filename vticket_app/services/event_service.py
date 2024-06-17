@@ -121,7 +121,7 @@ class EventService():
             return None
     
     def get_all_event(self, user_id: int) -> list[Event]:
-        return Event.objects.filter(owner_id=user_id)
+        return Event.objects.filter(owner_id=user_id).order_by("-start_date")
     
     def can_view_statistic(self, event: Event, user: UserDTO) -> bool:
         return event.owner_id == user.id

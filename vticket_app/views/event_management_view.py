@@ -4,6 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction, IntegrityError
 
 from vticket_app.dtos.create_event_dto import CreateEventDto
+from vticket_app.helpers.page_pagination import PagePagination
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.utils.response import RestResponse
 from vticket_app.serializers.create_event_serializer import CreateEventSerializer
@@ -18,11 +19,12 @@ from vticket_app.helpers.image_storage_providers.firebase_storage_provider impor
 
 from vticket_app.middlewares.custom_permissions.is_business import IsBusiness
 
-class EventManagementView(viewsets.ViewSet):
+class EventManagementView(viewsets.GenericViewSet):
     image_storage_provider: ImageStorageProvider = FirebaseStorageProvider()
     event_service = EventService()
     promotion_service = PromotionService()
     permission_classes = (IsBusiness, )
+    pagination_class = PagePagination
 
     @validate_body(CreateEventSerializer)
     @swagger_auto_schema(request_body=CreateEventSerializer, manual_parameters=[SwaggerProvider.header_authentication()])
@@ -50,8 +52,16 @@ class EventManagementView(viewsets.ViewSet):
     def list(self, request: Request):
         try:
             events = self.event_service.get_all_event(request.user.id)
-
-            return RestResponse().success().set_data({"event": EventSerializer(events, many=True, exclude=["ticket_types"]).data}).response
+            
+            page_size = request.query_params.get('page_size')
+            if page_size is None:
+                data = EventSerializer(events, many=True, exclude=["ticket_types", "event_topic"]).data
+                return RestResponse().success().set_data(data).response
+            
+            pevents = self.paginate_queryset(events)
+            data = EventSerializer(pevents, many=True, exclude=["ticket_types", "event_topic"]).data
+            pdata = self.get_paginated_response(data)
+            return RestResponse().success().set_data(pdata).response
         except Exception as e:
             print(e) 
             return RestResponse().internal_server_error().response
