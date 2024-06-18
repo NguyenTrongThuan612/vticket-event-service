@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from vticket_app.enums.calculate_bill_error_enum import CalculateBillErrorEnum
 from vticket_app.enums.instance_error_enum import InstanceErrorEnum
 from vticket_app.helpers.client_request_helper import get_client_ip
 from vticket_app.utils.response import RestResponse
@@ -14,6 +15,7 @@ from vticket_app.decorators.validate_body import validate_body
 from vticket_app.helpers.swagger_provider import SwaggerProvider
 from vticket_app.middlewares.custom_permissions.is_customer import IsCustomer
 from vticket_app.validations.booking_validator import BookingValidator
+from vticket_app.validations.pay_booking_validator import PayBookingValidator
 from vticket_app.validations.update_booking_validator import UpdateBookingValidator
 
 class TicketView(viewsets.ViewSet):
@@ -51,14 +53,21 @@ class TicketView(viewsets.ViewSet):
             print(e)
             return RestResponse().internal_server_error().response
     
-    @action(methods=["GET"], detail=True, url_path="pay")
-    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()])
-    def pay_booking(self, request: Request, pk: str):
+    @action(methods=["POST"], detail=False, url_path="pay")
+    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()], request_body=PayBookingValidator)
+    @validate_body(PayBookingValidator)
+    def pay_booking(self, request: Request, validated_body: dict):
         try:
-            if not self.ticket_service.verify_booking_id(pk):
-                return RestResponse().defined_error().response
+            pk = validated_body["booking_id"]
 
-            bill_value = self.ticket_service.calculate_bill(pk)
+            if not self.ticket_service.verify_booking_id(pk):
+                return RestResponse().defined_error().set_data("invalid_booking_id").response
+
+            bill_value, result = self.ticket_service.calculate_bill(pk, validated_body["discount"])
+
+            if result != CalculateBillErrorEnum.OK:
+                return RestResponse().defined_error().set_data({"error": result.value}).response
+            
             pay_url, ok = self.ticket_service.get_pay_url(
                 pk,
                 bill_value,

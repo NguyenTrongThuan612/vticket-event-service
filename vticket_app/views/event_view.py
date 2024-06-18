@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from vticket_app.models.event import Event
 from vticket_app.helpers.page_pagination import PagePagination
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.feedback_service import FeedbackService
@@ -17,6 +18,9 @@ from vticket_app.helpers.image_storage_providers.image_storage_provider import I
 from vticket_app.helpers.image_storage_providers.firebase_storage_provider import FirebaseStorageProvider
 
 class EventView(viewsets.GenericViewSet):
+    serializer_class = EventSerializer
+    queryset = Event.objects.all()
+
     image_storage_provider: ImageStorageProvider = FirebaseStorageProvider()
     event_service = EventService()
     promotion_service = PromotionService()

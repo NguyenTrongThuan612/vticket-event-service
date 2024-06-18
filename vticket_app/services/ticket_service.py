@@ -8,11 +8,16 @@ from typing import Tuple, Union
 
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import Q, Case, When, Value, BooleanField, Sum
+from django.db.models import Q, Case, When, Value, BooleanField, Sum, F
 from django.core.cache import cache
 
 from vticket_app.configs.related_services import RelatedService
+from vticket_app.enums.calculate_bill_error_enum import CalculateBillErrorEnum
+from vticket_app.enums.discount_type_enum import DiscountTypeEnum
+from vticket_app.enums.fee_type_enum import FeeTypeEnum
+from vticket_app.enums.promotion_evaluation_condition_enum import PromotionEvaluationConditionEnum
 from vticket_app.models.event import Event
+from vticket_app.models.promotion import Promotion
 from vticket_app.models.ticket_type import TicketType
 from vticket_app.models.ticket_type_detail import TicketTypeDetail
 from vticket_app.models.seat_configuration import SeatConfiguration
@@ -190,14 +195,47 @@ class TicketService():
             print(e)
             return "", False
         
-    def calculate_bill(self, booking_id: str) -> int:
+    def calculate_bill(self, booking_id: str, promotion: Promotion = None) -> Union[int, CalculateBillErrorEnum]:
         try:
-            origin = Booking.objects.get(id=booking_id).seats.aggregate(bill_value=Sum("ticket_type__price"))
-            return origin["bill_value"]
+            bill_value = 0
+
+            for seat in Booking.objects.get(id=booking_id).seats.all():
+                _ticket_price = seat.ticket_type.price
+                bill_value = bill_value + _ticket_price
+
+                for fee in seat.ticket_type.ticket_type_details.all():
+                    if fee.fee_type == FeeTypeEnum.cash:
+                        bill_value = bill_value + fee.fee_value
+                    elif fee.fee_type == FeeTypeEnum.percent:
+                        bill_value = bill_value + _ticket_price*fee.fee_value/100
+
+            if promotion is not None:
+                if not self.__verify_promotion(bill_value, promotion):
+                    return -1, CalculateBillErrorEnum.INVALID_PROMOTION
+                
+                bill_value = bill_value - {
+                    DiscountTypeEnum.cash: lambda v, p: p.discount_value,
+                    DiscountTypeEnum.percent: (lambda v, p: p.maximum_reduction_amount 
+                                               if v*p.discount_value/100 > p.maximum_reduction_amount 
+                                               else v*p.discount_value/100
+                                            )
+                }[promotion.discount_type](bill_value, promotion)
+
+            return bill_value, CalculateBillErrorEnum.OK
         except Exception as e:
             print(e)
             raise e
         
+    def __verify_promotion(self, total_bill: int, promotion: Promotion) -> bool:
+        ok = {
+            PromotionEvaluationConditionEnum.gt: lambda x: x > promotion.evaluation_value,
+            PromotionEvaluationConditionEnum.gte: lambda x: x >= promotion.evaluation_value,
+            PromotionEvaluationConditionEnum.lt: lambda x: x < promotion.evaluation_value,
+            PromotionEvaluationConditionEnum.lte: lambda x: x <= promotion.evaluation_value,
+        }[promotion.condition](total_bill)
+
+        return ok
+
     def update_booking(self, payment_id: int, booking_id: str, paid_at: datetime.datetime) -> bool:
         try:
             booking = Booking.objects.get(id=booking_id)

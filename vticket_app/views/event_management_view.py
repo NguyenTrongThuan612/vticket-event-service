@@ -5,6 +5,7 @@ from django.db import transaction, IntegrityError
 
 from vticket_app.dtos.create_event_dto import CreateEventDto
 from vticket_app.helpers.page_pagination import PagePagination
+from vticket_app.models.event import Event
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.utils.response import RestResponse
 from vticket_app.serializers.create_event_serializer import CreateEventSerializer
@@ -25,6 +26,8 @@ class EventManagementView(viewsets.GenericViewSet):
     promotion_service = PromotionService()
     permission_classes = (IsBusiness, )
     pagination_class = PagePagination
+    serializer_class = EventSerializer
+    queryset = Event.objects.all()
 
     @validate_body(CreateEventSerializer)
     @swagger_auto_schema(request_body=CreateEventSerializer, manual_parameters=[SwaggerProvider.header_authentication()])

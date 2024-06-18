@@ -14,6 +14,6 @@ class BookingValidator(serializers.Serializer):
         _validated_data = super().validate(attrs)
 
         if any(seat.ticket_type.event.id != _validated_data["event"].id for seat in _validated_data["seats"]):
-            raise serializers.ValidationError("Has invalid seat' event id!")
+            raise serializers.ValidationError("Has invalid seat'event id!")
         
         return _validated_data

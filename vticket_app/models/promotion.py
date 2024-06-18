@@ -15,7 +15,7 @@ class Promotion(models.Model):
     discount_type = models.CharField(max_length=100, choices=DiscountTypeEnum.choices)
     discount_value = models.IntegerField(validators=[MinValueValidator(1)])
     maximum_reduction_amount = models.IntegerField(validators=[MinValueValidator(1)])
-    quantity = models.IntegerField(validators=[MinValueValidator(1)])
+    quantity = models.IntegerField(validators=[MinValueValidator(0)])
     evaluation_field = models.CharField(max_length=100, choices=PromotionEvaluationFieldEnum.choices)
     condition = models.CharField(max_length=10, choices=PromotionEvaluationConditionEnum.choices)
     evaluation_value = models.IntegerField(null=False, validators=[MinValueValidator(0)])
