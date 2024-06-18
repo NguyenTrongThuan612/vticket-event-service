@@ -136,10 +136,13 @@ class EventService():
                     "template_name": "new_event.html",
                     "context": {
                         "name": event.name,
-                        "start_date": event.start_date.strftime("%d-%m-%Y"),
+                        "start_date__day": event.start_date.day,
+                        "start_date__month": event.start_date.month,
+                        "start_date__year": event.start_date.year,
                         "start_time": event.start_time.strftime("%H:%M"),
                         "event_url": f"https://vticket.netlify.app/event/{event.id}",
-                        "event_banner_url": event.banner_url
+                        "event_banner_url": event.banner_url,
+                        "location": event.location
                     }
                 }
             )
