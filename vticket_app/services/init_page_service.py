@@ -11,7 +11,7 @@ from vticket_app.serializers.event_topic_serializer import EventTopicSerializer
 class InitPageService():
     banner_length = 5
     topic_type_length = 6
-    upcomming_events_length = 12
+    upcomming_events_length = 8
 
     def get_banner(self) -> Union[list|None]:
         try:
