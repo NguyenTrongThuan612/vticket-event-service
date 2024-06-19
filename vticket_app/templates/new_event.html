@@ -1,7 +1,211 @@
-<div style="width: 100%;">
-    <div style="width: 100%; height: 50px; background-color: rgb(86, 86, 86); color: #fff; text-align: center;line-height: 50px;font-size: 24px;">Chào đón sự kiện mới: {{name}}</div>
-    <div style="font-size: 24px;">Ngày bắt đầu: {{start_date}}</div>
-    <div style="font-size: 24px;">Giờ  bắt đầu: {{start_time}}</div>
-    <div style="font-size: 24px;">Xem chi tiết sự kiện <a href="{{event_url}}">tại đây</a></div>
-    <img src="{{event_banner_url}}" style="width: 100%;margin-top: 12px;">
-</div>
+<!DOCTYPE html>
+<html lang="vn">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div style="
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        padding: 20px 40px;
+        background-color: #fff;
+        ">
+        <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 10px 0;
+        background-color: transparent;
+        ">
+            <img src="{{event_banner_url}}" 
+            style="
+                height: 50px;
+                object-fit: contain;"
+            >
+            <div style="
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            font-size: 30px;">
+            <i class="fa fa-envelope"></i>
+            <i class="fa fa-bell"></i>
+            </div>
+        </div>
+        <div style="
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        border-radius: 10px;
+        border: none;
+        padding: 20px 40px;
+        gap: 20px;
+        background-color: #F5F5F5;
+        ">
+            <h1 style="
+            display: flex;
+            justify-content: center;
+            font-size: 30px;
+            color: rgb(5, 4, 83);
+            width: 100%;
+            padding: 0 40px;">Chào mừng sự kiện mới tại {{location}}</h1>
+            <div style="
+            width: 90%;
+            height: 1px;
+            background-color:  rgb(5, 4, 83);"></div>
+            <div style="
+            width: 100%; 
+            display: flex;
+            justify-content: center;
+            position: relative;">
+                <div style="
+                position: absolute;
+                bottom: 20px;
+                display: flex;
+                flex-direction: column;
+                width: 80%;
+                margin: auto;
+                align-items: center;
+                gap: 10px;"
+                >
+                    <div style="
+                    width: 100%;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    ">
+                        <h2 style="
+                        font-size: 28px;
+                        color: #fff;
+                        width: 400px;
+                        text-shadow: 2px 2px 4px #000000;">{{name}}</h2>
+                        <div style="
+                        display: flex;
+                        gap: 20px;
+                        background-color: rgba(51,51,51,.55);
+                        border-radius: 5px;
+                        border: none;
+                        padding: 0 40px 0 20px ;">
+                            <div style="
+                            display: flex;
+                            flex-direction: column;
+                            padding: 10px 20px;
+                            align-items: center;
+                            gap: 10px;">
+                              <span id="month" style="
+                              font-size: 24px;
+                              font-weight: 600;
+                              color: #fff;">Tháng {{start_date__day}}</span>
+                              <span id="day" style="
+                              font-size: 24px;
+                              font-weight: 600;
+                              color: #fff;">{{start_date__month}}</span>
+                              <span id="year" style="
+                              font-size: 24px;
+                              font-weight: 600;
+                              color: #fff;">{{start_date__year}}</span>
+                            </div>
+                            <div style="
+                            display: flex;
+                            flex-direction: column;
+                            height: auto;
+                            justify-content: center;
+                            padding-top: 10px;
+                            gap: 20px;">
+                              <span style="
+                              display: flex;
+                              align-items: center;
+                              gap: 10px;
+                              width: 120px;
+                              font-size: 16px;
+                              color: #fff;">
+                                <i class="fa fa-clock-o"></i>
+                                {{start_time}}
+                              </span>
+                              <span style="
+                              display: flex;
+                              align-items: center;
+                              gap: 10px;
+                              width: 200px;
+                              font-size: 16px;
+                              color: #fff;">
+                                <i class="fa fa-map-marker"></i>
+                                {{location}}
+                              </span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{event_url}}" style='
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 16px;
+                    color: #fff;
+                    background-color: rgba(51,51,51,.55);
+                    border-radius: 5px;
+                    border: none;
+                    padding: 10px 20px;          
+                    text-decoration: none !important;
+                    '>Xem chi tiết</a>
+                </div>
+                <img src="https://storage.googleapis.com/vticket-1ccb9.appspot.com/4556a0e3-1c46-4b83-8d5f-d8681c5d7e85_phuongthanh_concert.jpg" 
+                style="
+                    width: 80vw;
+                    height: 400px;
+                    border-radius: 8px;
+                    border: none;
+                    object-fit: cover;
+                    object-position: center center;"
+                >
+            </div>
+            <div style='
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            background-color: var(--gray);
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            gap: 10px;
+            user-select: none;'>
+                <span style='
+                font-size: 16px;
+                color: #000;
+                text-align: center;'>VTicket là trang web đặt vé sự kiện trên toàn Việt Nam, cung cấp vé cho nhiều loại sự kiện như nhạc hội, gây quỹ từ thiện, ẩm thực, thể thao và nhiều hơn nữa, giúp bạn dễ dàng tham gia mọi hoạt động yêu thích.</span>
+                <span style='
+                font-size: 14px;
+                color: #000;
+                text-align: center;'>©2024 VTicket. All rights reserved.</span>
+            </div>
+        </div>
+    </div>
+    <!-- <script>
+        // Lấy biến start_date từ server-side (template engine)
+        const start_date = "{{start_date}}";
+
+        // Tách start_date thành ngày, tháng, năm
+        const [day, month, year] = start_date.split('-');
+
+        // Gán giá trị ngày, tháng, năm vào các phần tử HTML tương ứng
+        document.getElementById('day').textContent = day;
+        document.getElementById('month').textContent = `Tháng ${month}`;
+        document.getElementById('year').textContent = year;
+    </script> -->
+</body>
+</html>
