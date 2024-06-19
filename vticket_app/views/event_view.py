@@ -79,7 +79,6 @@ class EventView(viewsets.GenericViewSet):
             print(e)
             return RestResponse().internal_server_error().response
         
-
     @action(methods=["GET"], detail=True, url_path="feedback")
     def get_feedbacks(self, request: Request, pk: str):
         try:
@@ -87,4 +86,17 @@ class EventView(viewsets.GenericViewSet):
             return RestResponse().success().set_data({"feedbacks": result}).response
         except Exception as e:
             print(e)
+            return RestResponse().internal_server_error().response
+    
+    @action(methods=["GET"], detail=False, url_path="upcomming", pagination_class=PagePagination)
+    def get_upcomming_events(self, request: Request):
+        try:
+            events = self.event_service.get_upcomming_events()
+     
+            pevents = self.paginate_queryset(events)
+            data = EventSerializer(pevents, many=True, exclude=["ticket_types", "event_topic"]).data
+            pdata = self.get_paginated_response(data)
+            return RestResponse().success().set_data(pdata).response
+        except Exception as e:
+            print(e) 
             return RestResponse().internal_server_error().response

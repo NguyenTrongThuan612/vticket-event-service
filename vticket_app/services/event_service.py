@@ -1,4 +1,6 @@
 import dataclasses
+from datetime import datetime
+from typing import Union
 from django.db.models import Q
 import requests
 
@@ -145,5 +147,15 @@ class EventService():
             )
         except Exception as e:
             print(e)
+
+
+    def get_upcomming_events(self) -> Union[list|None]:
+        try:
+            _today = datetime.now().date()
+            return Event.objects.filter(start_date__gte=_today).order_by("start_date")
+        
+        except Exception as e:
+            print(e)
+            return None
         
         
