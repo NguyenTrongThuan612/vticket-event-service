@@ -4,7 +4,7 @@ from rest_framework import serializers
 from vticket_app.models.booking import Booking
 from vticket_app.models.promotion import Promotion
 
-class PayBookingValidator(serializers.Serializer):
+class PreviewPayBookingValidator(serializers.Serializer):
     booking_id = serializers.CharField()
     discount = serializers.PrimaryKeyRelatedField(queryset=Promotion.objects.filter(deleted_at=None, evaluation_field__gte=1), allow_null=True)
 
@@ -15,6 +15,7 @@ class PayBookingValidator(serializers.Serializer):
 
             if booking.seats.all()[0].ticket_type.event.id != _validated_data["discount"].event.id:
                 raise serializers.ValidationError("Can not apply the discount for this event!")
+            
             return _validated_data
         except Exception as e:
             print(e)
@@ -24,9 +25,6 @@ class PayBookingValidator(serializers.Serializer):
         _today = datetime.datetime.now().date()
 
         if value.start_date > _today or value.end_date < _today:
-            raise serializers.ValidationError("expired")
-
-        if value.quantity <= 0:
-            raise serializers.ValidationError("sold_out")
+            serializers.ValidationError("expired")
             
         return value

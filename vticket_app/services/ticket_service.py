@@ -195,25 +195,40 @@ class TicketService():
             print(e)
             return "", False
         
-    def calculate_bill(self, booking_id: str, promotion: Promotion = None) -> Union[int, CalculateBillErrorEnum]:
+    def calculate_bill(self, booking_id: str, promotion: Promotion = None) -> Union[int, dict, CalculateBillErrorEnum]:
         try:
             bill_value = 0
+            _origin = 0
+            tax = []
+            _discount = 0
 
             for seat in Booking.objects.get(id=booking_id).seats.all():
                 _ticket_price = seat.ticket_type.price
                 bill_value = bill_value + _ticket_price
+                _origin = _origin + _ticket_price
 
                 for fee in seat.ticket_type.ticket_type_details.all():
+                    _tax = 0
+
                     if fee.fee_type == FeeTypeEnum.cash:
-                        bill_value = bill_value + fee.fee_value
+                        _tax = fee.fee_value
                     elif fee.fee_type == FeeTypeEnum.percent:
-                        bill_value = bill_value + _ticket_price*fee.fee_value/100
+                        _tax = _ticket_price*fee.fee_value/100
+
+                    tax.append(
+                        {
+                            "name": fee.name,
+                            "value": _tax
+                        }
+                    )
+
+                    bill_value = bill_value + _tax
 
             if promotion is not None:
                 if not self.__verify_promotion(bill_value, promotion):
-                    return -1, CalculateBillErrorEnum.INVALID_PROMOTION
+                    return -1, None, CalculateBillErrorEnum.INVALID_PROMOTION
                 
-                bill_value = bill_value - {
+                _discount = {
                     DiscountTypeEnum.cash: lambda v, p: p.discount_value,
                     DiscountTypeEnum.percent: (lambda v, p: p.maximum_reduction_amount 
                                                if v*p.discount_value/100 > p.maximum_reduction_amount 
@@ -221,7 +236,15 @@ class TicketService():
                                             )
                 }[promotion.discount_type](bill_value, promotion)
 
-            return bill_value, CalculateBillErrorEnum.OK
+                bill_value = bill_value - _discount
+
+            calculate_detail = {
+                "origin": _origin,
+                "tax": tax,
+                "discount": _discount
+            }
+
+            return bill_value, calculate_detail, CalculateBillErrorEnum.OK
         except Exception as e:
             print(e)
             raise e

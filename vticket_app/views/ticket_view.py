@@ -52,6 +52,33 @@ class TicketView(viewsets.ViewSet):
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
+        
+    @action(methods=["POST"], detail=False, url_path="pay/preview")
+    @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()], request_body=PayBookingValidator)
+    @validate_body(PayBookingValidator)
+    def preview_pay_booking(self, request: Request, validated_body: dict):
+        try:
+            if not self.ticket_service.verify_booking_id(validated_body["booking_id"]):
+                return RestResponse().defined_error().set_data("invalid_booking_id").response
+            
+            bill_value, calculate_detail, result = self.ticket_service.calculate_bill(
+                validated_body["booking_id"], 
+                validated_body["discount"]
+            )
+
+            if result != CalculateBillErrorEnum.OK:
+                return RestResponse().defined_error().set_data({"error": result.value}).response
+            
+            return RestResponse().success().set_data(
+                {
+                    "bill_value": bill_value,
+                    "calculate_detail": calculate_detail
+                }
+            ).response
+
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response    
     
     @action(methods=["POST"], detail=False, url_path="pay")
     @swagger_auto_schema(manual_parameters=[SwaggerProvider.header_authentication()], request_body=PayBookingValidator)
@@ -63,7 +90,7 @@ class TicketView(viewsets.ViewSet):
             if not self.ticket_service.verify_booking_id(pk):
                 return RestResponse().defined_error().set_data("invalid_booking_id").response
 
-            bill_value, result = self.ticket_service.calculate_bill(pk, validated_body["discount"])
+            bill_value, _, result = self.ticket_service.calculate_bill(pk, validated_body["discount"])
 
             if result != CalculateBillErrorEnum.OK:
                 return RestResponse().defined_error().set_data({"error": result.value}).response
