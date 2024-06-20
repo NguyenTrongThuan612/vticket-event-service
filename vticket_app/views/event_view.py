@@ -8,6 +8,7 @@ from vticket_app.models.event import Event
 from vticket_app.helpers.page_pagination import PagePagination
 from vticket_app.serializers.event_serializer import EventSerializer
 from vticket_app.services.feedback_service import FeedbackService
+from vticket_app.services.ticket_service import TicketService
 from vticket_app.utils.response import RestResponse
 
 from vticket_app.services.event_service import EventService
@@ -25,6 +26,7 @@ class EventView(viewsets.GenericViewSet):
     event_service = EventService()
     promotion_service = PromotionService()
     feedback_service = FeedbackService()
+    ticket_service = TicketService()
     authentication_classes = ()
 
     def retrieve(self, request: Request, pk: int):
@@ -99,4 +101,17 @@ class EventView(viewsets.GenericViewSet):
             return RestResponse().success().set_data(pdata).response
         except Exception as e:
             print(e) 
+            return RestResponse().internal_server_error().response
+        
+    @action(methods=["GET"], detail=True, url_path="tickets-sold")
+    @swagger_auto_schema(manual_parameters=[SwaggerProvider.query_param("start_date", openapi.TYPE_STRING),
+                                            SwaggerProvider.query_param("end_date", openapi.TYPE_STRING)])
+    def get_tickets_sold(self, request: Request, pk: str):
+        try:
+            start_date = request.query_params.get("start_date", None) 
+            end_date = request.query_params.get("end_date", None)
+            result = self.ticket_service.get_tickets_sold_by_event_id(int(pk), start_date=start_date, end_date=end_date)
+            return RestResponse().success().set_data(result).response
+        except Exception as e:
+            print(e)
             return RestResponse().internal_server_error().response
