@@ -25,7 +25,7 @@ class PromotionService():
             return False
         
     def get_promotions_by_event_id(self, event_id: int) -> list[dict]:
-        queryset = Promotion.objects.filter(event__id=event_id, deleted_at=None)
+        queryset = Promotion.objects.filter(event__id=event_id, deleted_at=None, quantity__gt=0)
         return PromotionSerializer(queryset, many=True).data
     
     def get_promotion_by_id(self, id: int) -> Union[Promotion|None]:

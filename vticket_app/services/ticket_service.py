@@ -223,7 +223,7 @@ class TicketService():
                     )
 
                     bill_value = bill_value + _tax
-
+            print(promotion)
             if promotion is not None:
                 if not self.__verify_promotion(bill_value, promotion):
                     return -1, None, CalculateBillErrorEnum.INVALID_PROMOTION
@@ -283,4 +283,37 @@ class TicketService():
             
     def verify_booking_id(self, booking_id: str) -> bool:
         return bool(cache.keys(f"booking:{booking_id}:seat:*"))
+
+    def get_usable_promotions_by_booking(self, event: Event, bill_value: int) -> list[Promotion]:
+        try:
+            _today = datetime.datetime.now().date()
+
+            base_conditions = Q(
+                event=event,
+                deleted_at=None,
+                start_date__lte=_today,
+                end_date__gte=_today,
+                quantity__gt=0
+            )
+
+            case_conditions = Case(
+                When(condition=PromotionEvaluationConditionEnum.gte.value, evaluation_value__lte=bill_value, then=True),
+                When(condition=PromotionEvaluationConditionEnum.gt.value, evaluation_value__lt=bill_value, then=True),
+                When(condition=PromotionEvaluationConditionEnum.lte.value, evaluation_value__gte=bill_value, then=True),
+                When(condition=PromotionEvaluationConditionEnum.lt.value, evaluation_value__gt=bill_value, then=True),
+                default=False,
+                output_field=BooleanField()
+            )
+
+            promotions = Promotion.objects.annotate(
+                is_usable=case_conditions
+            ).filter(
+                base_conditions,
+                is_usable=True
+            )
+
+            return promotions
+        except Exception as e:
+            print(e)
+            return []
 

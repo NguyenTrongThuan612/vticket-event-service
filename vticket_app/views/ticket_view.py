@@ -9,11 +9,14 @@ from drf_yasg import openapi
 from vticket_app.enums.calculate_bill_error_enum import CalculateBillErrorEnum
 from vticket_app.enums.instance_error_enum import InstanceErrorEnum
 from vticket_app.helpers.client_request_helper import get_client_ip
+from vticket_app.models.booking import Booking
+from vticket_app.serializers.promotion_serializer import PromotionSerializer
 from vticket_app.utils.response import RestResponse
 from vticket_app.services.ticket_service import TicketService
 from vticket_app.decorators.validate_body import validate_body
 from vticket_app.helpers.swagger_provider import SwaggerProvider
 from vticket_app.middlewares.custom_permissions.is_customer import IsCustomer
+from vticket_app.validations.booking_id_validator import BookingIdValidator
 from vticket_app.validations.booking_validator import BookingValidator
 from vticket_app.validations.pay_booking_validator import PayBookingValidator
 from vticket_app.validations.update_booking_validator import UpdateBookingValidator
@@ -34,6 +37,25 @@ class TicketView(viewsets.ViewSet):
                 InstanceErrorEnum.EXISTED: RestResponse().defined_error().set_message("Rất tiếc! Ghế bạn chọn không còn trống!").response
             }[result]
 
+        except Exception as e:
+            print(e)
+            return RestResponse().internal_server_error().response
+        
+    @action(methods=["POST"], detail=False, url_path="booking/promotion", permission_classes=(IsCustomer, ))
+    @swagger_auto_schema(request_body=BookingIdValidator, manual_parameters=[SwaggerProvider.header_authentication()])
+    @validate_body(BookingIdValidator)
+    def get_usable_promotions_by_booking(self, request: Request, validated_body: dict):
+        try:
+            bill_value, _, result = self.ticket_service.calculate_bill(validated_body["booking_id"])
+
+            if result != CalculateBillErrorEnum.OK:
+                return RestResponse().defined_error().set_data({"error": result.value}).response
+            
+            booking = Booking.objects.get(id=validated_body["booking_id"])
+            
+            promotions = self.ticket_service.get_usable_promotions_by_booking(booking.seats.all()[0].ticket_type.event, bill_value)
+
+            return RestResponse().success().set_data(PromotionSerializer(promotions, many=True).data).response
         except Exception as e:
             print(e)
             return RestResponse().internal_server_error().response
