@@ -21,6 +21,9 @@ class PayBookingValidator(serializers.Serializer):
             raise serializers.ValidationError("booking_not_found")
         
     def validate_discount(self, value: Promotion):
+        if value is None:
+            return None
+
         _today = datetime.datetime.now().date()
 
         if value.start_date > _today or value.end_date < _today:

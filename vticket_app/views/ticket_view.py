@@ -1,21 +1,28 @@
 import pytz
 from datetime import datetime, timedelta
+from django.core.cache import cache
+
 from rest_framework import viewsets
 from rest_framework.request import Request
 from rest_framework.decorators import action
+
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from vticket_app.enums.calculate_bill_error_enum import CalculateBillErrorEnum
 from vticket_app.enums.instance_error_enum import InstanceErrorEnum
+
 from vticket_app.helpers.client_request_helper import get_client_ip
+from vticket_app.helpers.swagger_provider import SwaggerProvider
+
 from vticket_app.models.booking import Booking
+from vticket_app.models.promotion import Promotion
+from vticket_app.services.ticket_service import TicketService
 from vticket_app.serializers.promotion_serializer import PromotionSerializer
 from vticket_app.utils.response import RestResponse
-from vticket_app.services.ticket_service import TicketService
 from vticket_app.decorators.validate_body import validate_body
-from vticket_app.helpers.swagger_provider import SwaggerProvider
 from vticket_app.middlewares.custom_permissions.is_customer import IsCustomer
+
 from vticket_app.validations.booking_id_validator import BookingIdValidator
 from vticket_app.validations.booking_validator import BookingValidator
 from vticket_app.validations.pay_booking_validator import PayBookingValidator
@@ -110,7 +117,7 @@ class TicketView(viewsets.ViewSet):
             pk = validated_body["booking_id"]
 
             if not self.ticket_service.verify_booking_id(pk):
-                return RestResponse().defined_error().set_data("invalid_booking_id").response
+                return RestResponse().defined_error().set_data({"error": "invalid_booking_id"}).response
 
             bill_value, _, result = self.ticket_service.calculate_bill(pk, validated_body["discount"])
 
@@ -125,7 +132,15 @@ class TicketView(viewsets.ViewSet):
                 datetime.now(pytz.timezone("Asia/Ho_Chi_Minh")) + timedelta(minutes=10)
             )
 
+            discount: Promotion = validated_body["discount"]
+
             if ok:
+                if validated_body["discount"]:
+                    cache.set(
+                        f"booking:{pk}:discount:{discount.id}", 
+                        discount.id, 
+                        15*60
+                    )
                 return RestResponse().success().set_data({"url": pay_url}).response
             else:
                 return RestResponse().defined_error().response

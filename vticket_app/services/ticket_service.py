@@ -223,7 +223,7 @@ class TicketService():
                     )
 
                     bill_value = bill_value + _tax
-            print(promotion)
+
             if promotion is not None:
                 if not self.__verify_promotion(bill_value, promotion):
                     return -1, None, CalculateBillErrorEnum.INVALID_PROMOTION
@@ -296,23 +296,35 @@ class TicketService():
                 quantity__gt=0
             )
 
-            case_conditions = Case(
-                When(condition=PromotionEvaluationConditionEnum.gte.value, evaluation_value__lte=bill_value, then=True),
-                When(condition=PromotionEvaluationConditionEnum.gt.value, evaluation_value__lt=bill_value, then=True),
-                When(condition=PromotionEvaluationConditionEnum.lte.value, evaluation_value__gte=bill_value, then=True),
-                When(condition=PromotionEvaluationConditionEnum.lt.value, evaluation_value__gt=bill_value, then=True),
-                default=False,
-                output_field=BooleanField()
+            case_conditions = Q(
+                Q(condition=PromotionEvaluationConditionEnum.gte.value, evaluation_value__lte=bill_value) |
+                Q(condition=PromotionEvaluationConditionEnum.gt.value, evaluation_value__lt=bill_value) |
+                Q(condition=PromotionEvaluationConditionEnum.lte.value, evaluation_value__gte=bill_value) |
+                Q(condition=PromotionEvaluationConditionEnum.lt.value, evaluation_value__gt=bill_value)
             )
 
-            promotions = Promotion.objects.annotate(
-                is_usable=case_conditions
-            ).filter(
-                base_conditions,
-                is_usable=True
-            )
+            promotions = Promotion.objects.filter(base_conditions & case_conditions)
 
-            return promotions
+            promotion_keys_in_cache = cache.keys("booking:*:discount:*")
+            num_promotions_in_cache = {}
+
+            for key in promotion_keys_in_cache:
+                pid = key.split(":")[-1]
+
+                if pid in num_promotions_in_cache:
+                    num_promotions_in_cache[pid] = num_promotions_in_cache[pid] + 1
+                else:
+                    num_promotions_in_cache[pid] = 1
+
+            useable_promotions = []
+
+            for promotion in promotions:
+                if promotion.id in num_promotions_in_cache:
+                    if promotion.quantity - num_promotions_in_cache[promotion.id] <= 0:
+                        continue
+                useable_promotions.append(promotion)
+
+            return useable_promotions
         except Exception as e:
             print(e)
             return []
