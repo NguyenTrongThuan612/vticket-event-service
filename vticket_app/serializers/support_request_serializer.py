@@ -5,6 +5,8 @@ class SupportRequestSerializer(serializers.ModelSerializer):
         model = SupportRequest
         exclude = ["owner_id"]
 
+    event_name = serializers.SerializerMethodField()
+
     def __init__(self, *args, **kwargs):
         existing = set(self.fields.keys())
         fields = kwargs.pop("fields", []) or existing
@@ -14,3 +16,6 @@ class SupportRequestSerializer(serializers.ModelSerializer):
         
         for field in exclude + list(existing - fields):
             self.fields.pop(field, None)
+
+    def get_event_name(self, obj):
+        return obj.event.name
