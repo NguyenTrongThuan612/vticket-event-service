@@ -310,7 +310,7 @@ class TicketService():
             num_promotions_in_cache = {}
 
             for key in promotion_keys_in_cache:
-                pid = key.split(":")[-1]
+                pid = int(key.split(":")[-1])
 
                 if pid in num_promotions_in_cache:
                     num_promotions_in_cache[pid] = num_promotions_in_cache[pid] + 1
