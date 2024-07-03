@@ -12,9 +12,10 @@ class PayBookingValidator(serializers.Serializer):
         try:
             _validated_data = super().validate(attrs)
             booking = Booking.objects.get(id=_validated_data["booking_id"])
-
-            if booking.seats.all()[0].ticket_type.event.id != _validated_data["discount"].event.id:
-                raise serializers.ValidationError("Can not apply the discount for this event!")
+            
+            if _validated_data["discount"] is not None:
+                if booking.seats.all()[0].ticket_type.event.id != _validated_data["discount"].event.id:
+                    raise serializers.ValidationError("Can not apply the discount for this event!")
             return _validated_data
         except Exception as e:
             print(e)
