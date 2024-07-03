@@ -380,7 +380,7 @@ class TicketService():
 
             resp = requests.get(url=f"{RelatedService.account}/user/{tickets[0].user_id}/internal").json()
             print("resp = ", resp)
-            
+
             if resp["status"] != 1:
                 return
 
@@ -395,7 +395,7 @@ class TicketService():
             for ticket in tickets:
                 mail_data["tickets"].append(
                     {
-                        "seat": ticket.seat.position + str(ticket.seat.position),
+                        "seat": ticket.seat.position + str(ticket.seat.seat_number),
                         "ticket_type": ticket.seat.ticket_type.name,
                         "ticket_price": ticket.seat.ticket_type.price,
                     }
@@ -403,7 +403,7 @@ class TicketService():
 
             async_send_email.apply_async(
                 kwargs={
-                    "to": resp["data"]["email"],
+                    "to": [resp["data"]["email"]],
                     "cc": [],
                     "subject": f"[Vticket] Vé điện tử",
                     "template_name": "ticket.html",
