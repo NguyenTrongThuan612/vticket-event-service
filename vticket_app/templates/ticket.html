@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vé điện tử</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .details {
+            padding: 20px 0;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .ticket {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vé điện tử</h1>
+        </div>
+        <div class="details">
+            <p><strong>Tên khách hàng:</strong> {{ fullname }}</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <p><strong>Mã thanh toán:</strong> {{ payment_id }}</p>
+            <p><strong>Thời gian thanh toán:</strong> {{ paid_at }}</p>
+        </div>
+        <div class="tickets">
+            {% for ticket in tickets %}
+            <div class="ticket">
+                <p><strong>Vị trí ghế:</strong> {{ ticket.seat }}</p>
+                <p><strong>Loại vé:</strong> {{ ticket.ticket_type }}</p>
+                <p><strong>Giá vé:</strong> {{ ticket.ticket_price }} VND</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="footer">
+            <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+            <p><strong>Vticket</strong></p>
+        </div>
+    </div>
+</body>
+</html>

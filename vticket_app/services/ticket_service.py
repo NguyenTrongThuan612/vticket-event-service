@@ -1,5 +1,4 @@
 import json
-from django.forms import ValidationError
 import pytz
 import requests
 import datetime
@@ -9,8 +8,9 @@ from typing import Tuple, Union
 
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import Q, Case, When, Value, BooleanField, Sum, F
 from django.core.cache import cache
+from django.forms import ValidationError
+from django.db.models import Q, Case, When, Value, BooleanField
 
 from vticket_app.configs.related_services import RelatedService
 from vticket_app.enums.calculate_bill_error_enum import CalculateBillErrorEnum
@@ -31,6 +31,7 @@ from vticket_app.dtos.seat_configuration_dto import SeatConfigurationDto
 
 from vticket_app.enums.instance_error_enum import InstanceErrorEnum
 from vticket_app.serializers.user_ticket_serializer import UserTicketSerializer
+from vticket_app.tasks.queue_tasks import async_send_email
 
 class TicketService():
     booking_payment_minute = 15
@@ -373,3 +374,41 @@ class TicketService():
 
         return ticket_process_data
 
+    def send_e_ticket(self, payment_id: str):
+        try:
+            tickets = UserTicket.objects.filter(payment_id=payment_id)
+
+            resp = requests.get(url=f"{RelatedService.account}/user/{tickets[0].user_id}/internal").json()
+            print("resp = ", resp)
+            
+            if resp["status"] != 1:
+                return
+
+            mail_data = {
+                "payment_id": payment_id,
+                "paid_at": tickets[0].paid_at,
+                "email": resp["data"]["email"],
+                "fullname": resp["data"]["first_name"] + " " + resp["data"]["last_name"],
+                "tickets": []
+            }
+
+            for ticket in tickets:
+                mail_data["tickets"].append(
+                    {
+                        "seat": ticket.seat.position + str(ticket.seat.position),
+                        "ticket_type": ticket.seat.ticket_type.name,
+                        "ticket_price": ticket.seat.ticket_type.price,
+                    }
+                )
+
+            async_send_email.apply_async(
+                kwargs={
+                    "to": resp["data"]["email"],
+                    "cc": [],
+                    "subject": f"[Vticket] Vé điện tử",
+                    "template_name": "ticket.html",
+                    "context": mail_data
+                }
+            )
+        except Exception as e:
+            print(e)
