@@ -160,6 +160,7 @@ class TicketView(viewsets.ViewSet):
             )
             
             if ok:
+                self.ticket_service.send_e_ticket(validated_data["payment_id"])
                 return RestResponse().success().response
             else:
                 return RestResponse().defined_error().response

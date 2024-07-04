@@ -14,4 +14,4 @@ app.conf.task_default_queue = 'event_task_queue'
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(10.0, keep_celery_alive.s())
+    sender.add_periodic_task(30.0, keep_celery_alive.s())
