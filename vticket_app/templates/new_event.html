@@ -24,7 +24,7 @@
                 <table width="600" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                         <td style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-                            <img src="{{event_banner_url}}" style="height: 50px; object-fit: contain;">
+                            <img src="{{logo_url}}" style="height: 50px; object-fit: contain;">
                             <div style="display: flex; align-items: center; gap: 30px; font-size: 30px;">
                                 <i class="fa fa-envelope"></i>
                                 <i class="fa fa-bell"></i>
@@ -45,11 +45,11 @@
                                                     <table cellpadding="0" cellspacing="0" border="0" style="display: flex; align-items: center;">
                                                         <tr style="display: flex; justify-content: center; align-items: center; width: 100%;">
                                                             <td style="padding: 10px 20px; text-align: center;">
-                                                                <span style="font-size: 24px; font-weight: 600; color: #fff;">Tháng {{start_date__day}}</span><br>
-                                                                <span style="font-size: 24px; font-weight: 600; color: #fff;">{{start_date__month}}</span><br>
+                                                                <span style="font-size: 24px; font-weight: 600; color: #fff;">Tháng {{start_date__month}}</span><br>
+                                                                <span style="font-size: 40px; font-weight: 600; color: #fff;">{{start_date__day}}</span><br>
                                                                 <span style="font-size: 24px; font-weight: 600; color: #fff;">{{start_date__year}}</span>
                                                             </td>
-                                                            <td style="padding-top: 10px; text-align: center;">
+                                                            <td style="padding-top: 10px; text-align: center; display: flex; align-items: center; flex-direction: column;">
                                                                 <span style="display: flex; align-items: center; gap: 10px; width: 120px; font-size: 16px; color: #fff;">
                                                                     <i class="fa fa-clock-o"></i>
                                                                     {{start_time}}

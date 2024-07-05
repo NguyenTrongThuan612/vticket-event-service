@@ -143,6 +143,7 @@ class EventService():
                         "start_date__year": event.start_date.year,
                         "start_time": event.start_time.strftime("%H:%M"),
                         "event_url": f"https://vticket.netlify.app/event/{event.id}",
+                        "logo_url": "https://storage.googleapis.com/vticket-1ccb9.appspot.com/93e815f5-da06-4b4a-890e-48fcdd55da83_logo.png",
                         "event_banner_url": event.banner_url,
                         "location": event.location
                     }
