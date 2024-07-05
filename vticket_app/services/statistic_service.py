@@ -85,7 +85,7 @@ class StatisticService:
             statistic_data.append({
                 'date': single_date,
                 'ticket_sold': ticket_sold,
-                'revenue': revenue
+                'revenue': int(revenue/100)
             })
             
         result = {
@@ -93,7 +93,7 @@ class StatisticService:
             'name': event_name,
             'statistic': statistic_data,
             'total_ticket_sold': total_ticket_sold,
-            'total_revenue': total_revenue
+            'total_revenue': int(total_revenue/100)
         }
         return result  
     
@@ -166,13 +166,13 @@ class StatisticService:
             statistic_by_day.append({
                 'date': single_date,
                 'ticket_sold': ticket_sold,
-                'revenue': revenue
+                'revenue': int(revenue/100)
             })
 
         result = {
             'statistic_by_day': statistic_by_day,
             'total_ticket_sold': total_ticket_sold,
-            'total_revenue': total_revenue
+            'total_revenue': int(total_revenue/100)
         }
         return result 
 
