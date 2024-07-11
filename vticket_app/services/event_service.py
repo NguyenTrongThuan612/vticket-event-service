@@ -1,5 +1,6 @@
 import dataclasses
 from datetime import datetime
+from django.utils import timezone
 from typing import Union
 from django.db.models import Q
 import requests
@@ -105,7 +106,11 @@ class EventService():
             return None
         
     def get_related_events(self, event: Event):
-        events = Event.objects.filter(event_topic__in=event.event_topic.all()).exclude(id=event.id).distinct()[:8]
+        today = timezone.now().date()
+        events = Event.objects.filter(
+            event_topic__in=event.event_topic.all(),
+            start_date__gt=today
+        ).exclude(id=event.id).distinct().order_by('start_date')[:8]
         return events
     
     def get_owner_info(self, event: Event):
